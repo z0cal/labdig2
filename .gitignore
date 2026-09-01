@@ -13,8 +13,17 @@ hps_isw_handoff/
 .qsys_edit/
 # workspace da GUI
 *.qws
-# arquivo compactado do projeto e sua extracao
+
+# Ferramentas locais de quem trabalha no repo, nao fazem parte do projeto
+# da disciplina (ex.: Makefile de build/entrega, manifesto de fontes do
+# workflow de simulacao). Cada um do grupo usa o proprio fluxo.
+Makefile
+files.f
+# arquivo compactado do projeto e sua extracao.
+# Excecao: o .qar da entrega (exp<N>_T<turma>B<bancada>.qar) E versionado,
+# para o grupo baixar direto do repo. Ver README.
 *.qar
+!exp*_T*B*.qar
 *.qarlog
 *_restored/
 *.archive.rpt
@@ -30,6 +39,12 @@ hps_isw_handoff/
 c5_pin_model_dump.txt
 quartus_compile.log
 tcl_stacktrace.txt
+
+# --- Icarus Verilog (workflow `check`) -----------------------------------
+.sim/
+*.vvp
+dump.vcd
+*.fst
 
 # --- ModelSim / Questa ---------------------------------------------------
 work/
