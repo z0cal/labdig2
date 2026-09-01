@@ -1,55 +1,62 @@
-# Prerequisites
-*.d
+# ==========================================================================
+# Artefatos de ferramentas FPGA - tudo aqui e regeravel, nada versionado
+# ==========================================================================
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# --- Quartus Prime -------------------------------------------------------
+db/
+incremental_db/
+output_files/
+simulation/
+greybox_tmp/
+hc_output/
+hps_isw_handoff/
+.qsys_edit/
+# workspace da GUI
+*.qws
+# arquivo compactado do projeto e sua extracao
+*.qar
+*.qarlog
+*_restored/
+*.archive.rpt
+*.restore.rpt
+*.rpt
+*.summary
+*.smsg
+*.pin
+*.sof
+*.pof
+*.jdi
+*.done
+c5_pin_model_dump.txt
+quartus_compile.log
+tcl_stacktrace.txt
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# --- ModelSim / Questa ---------------------------------------------------
+work/
+# projeto da GUI: use os scripts .do em exp*/sim/
+*.mpf
+modelsim.ini
+modelsim.ini.bak*
+*.cr.mti
+# waveform - facilmente centenas de MB
+*.wlf
+wlf*
+transcript
+vsim.dbg
+vish_stacktrace.vstf
+vsim_stacktrace.vstf
 
-# Precompiled Headers
-*.gch
-*.pch
+# --- backups de editor ---------------------------------------------------
+*.bak
+*~
+*.orig
+*.swp
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# --- sistema -------------------------------------------------------------
+.DS_Store
+Thumbs.db
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
+# --- relatorio ------------------------------------------------------------
+# O relato da Exp. 1 vive no Overleaf (~/projetos/overleaf/pcs3645-projeto),
+# nao neste repositorio. Ver README.md.
+exp1/relatorio/

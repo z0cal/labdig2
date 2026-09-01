@@ -1,0 +1,4 @@
+QUARTUS_VERSION = "25.1"
+
+# Revisions
+PROJECT_REVISION = "exp1_controle_servo"
