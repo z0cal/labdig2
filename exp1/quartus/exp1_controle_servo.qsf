@@ -46,6 +46,10 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to controle
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_controle
 
 # --- diversos -------------------------------------------------------------
+# ALL = usa todos os nucleos que o Quartus detectar na maquina. Nao fixar um
+# numero: 12 (threads do i7-1365U) gera Warning 20031, porque o Quartus conta
+# nucleos fisicos (10), nao threads.
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256

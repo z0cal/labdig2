@@ -1,0 +1,31 @@
+# Projeto DE0-CV (5CEBA4F23C7) — esqueleto gerado por fpga-new.
+# A lista de fontes fica entre os marcadores e e regenerada por 'make sync'.
+# Pinos, timing e demais assignments sao seus: nada aqui os reescreve.
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CEBA4F23C7
+set_global_assignment -name TOP_LEVEL_ENTITY tx_serial_7N2
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name SDC_FILE ../../constraints/de0_cv.sdc
+
+# >>> fpga-sync: fontes de sintese (gerado a partir de rtl/ — nao edite) >>>
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_m.v
+set_global_assignment -name VERILOG_FILE ../../rtl/deslocador_n.v
+set_global_assignment -name VERILOG_FILE ../../rtl/edge_detector.v
+set_global_assignment -name VERILOG_FILE ../../rtl/hexa7seg.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_7N1.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_7N2_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_7N2.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_uc.v
+# <<< fpga-sync <<<
+
+# Pinagem do top (tx_serial_7E1) — complete os PIN_?? pelo Pin Planner
+# (make gui) ou pelo manual da DE0-CV, e descomente a linha.
+# (o top ainda nao existe: depois de escreve-lo, rode 'fpga-sync --pins')
+
+
+set_global_assignment -name LAST_QUARTUS_VERSION "25.1std.0 Lite Edition"
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
