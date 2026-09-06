@@ -1,10 +1,10 @@
 /* -------------------------------------------------------------
  * Arquivo   : tx_serial_7N2.v
  *--------------------------------------------------------------
- * Descricao : circuito base de transmissao serial assincrona 
- *             ==> comunicacao serial de 7 bits de dados, 
+ * Descricao : circuito base de transmissao serial assincrona
+ *             ==> comunicacao serial de 7 bits de dados,
  *                 sem partidade, 2 stop bits e 9600 bauds
- * 
+ *
  * entradas : partida, dados_ascii
  * saidas   : saida_serial, pronto
  * depuracao: db_clock, db_tick, db_partida, db_saida_serial
@@ -16,7 +16,7 @@
  *     30/08/2025  1.0     Edson Midorikawa  criacao
  *--------------------------------------------------------------
  */
- 
+
 module tx_serial_7E1 (
     input        clock           ,
     input        reset           ,
@@ -28,9 +28,9 @@ module tx_serial_7E1 (
     output       db_tick         ,
     output       db_partida      ,
     output       db_saida_serial ,
-    output [6:0] db_estado       
+    output [6:0] db_estado
 );
- 
+
     wire       s_reset        ;
     wire       s_partida      ;
     wire       s_partida_ed   ;
@@ -46,9 +46,9 @@ module tx_serial_7E1 (
 	 // sinais reset e partida (ativos em alto - GPIO)
     assign s_reset   = reset;
     assign s_partida = partida;
-	 
+
     // fluxo de dados
-    tx_serial_7N2_fd U1_FD (
+    tx_serial_7E1_fd U1_FD (
         .clock        ( clock          ),
         .reset        ( s_reset        ),
         .zera         ( s_zera         ),
@@ -77,11 +77,9 @@ module tx_serial_7E1 (
     );
 
     // gerador de tick
-    // fator de divisao para 9600 bauds (5208=50M/9600) 13 bits
-    // fator de divisao para 115.200 bauds (434=50M/115200) 9 bits
     contador_m #(
-        .M(5208), 
-        .N(13) 
+        .M(434),
+        .N(9)
      ) U3_TICK (
         .clock   ( clock  ),
         .zera_as ( 1'b0   ),
@@ -112,9 +110,9 @@ module tx_serial_7E1 (
     assign db_saida_serial = s_saida_serial;
 
     // hexa0
-    hexa7seg HEX0 ( 
-        .hexa    ( s_estado  ), 
+    hexa7seg HEX0 (
+        .hexa    ( s_estado  ),
         .display ( db_estado )
     );
-  
+
 endmodule
