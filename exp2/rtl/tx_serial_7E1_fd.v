@@ -1,15 +1,18 @@
 /* -------------------------------------------------------------
- * Arquivo   : tx_serial_7N2_fd.v
+ * Arquivo   : tx_serial_7E1_fd.v
  *--------------------------------------------------------------
- * Descricao : fluxo de dados do circuito base de transmissao
- *             serial assincrona (7N2)
+ * Descricao : fluxo de dados do circuito de transmissao serial
+ *             assincrona da Atividade 2 (7E1)
  *             ==> contem deslocador com 11 bits e contador
- *                 modulo 12
+ *                 modulo 12; o quadro tem 10 bits, como no 7N2,
+ *                 com a paridade par ocupando a posicao que era
+ *                 do primeiro stop bit
  *
  *--------------------------------------------------------------
  * Revisoes  :
  *     Data        Versao  Autor             Descricao
  *     30/08/2025  1.0     Edson Midorikawa  criacao
+ *     07/09/2026  2.0     Bancada A5        montagem do quadro 7E1
  *--------------------------------------------------------------
  */
 
@@ -32,8 +35,8 @@
     assign s_dados[0]   = 1'b1;             // repouso
     assign s_dados[1]   = 1'b0;             // start bit
     assign s_dados[8:2] = dados_ascii[6:0]; // dado
-    assign s_dados[9]   = ^dados_ascii;     // bit de paridade=xor de todos os elementos
-    assign s_dados[10]  = 1'b1;             // stop bit 2
+    assign s_dados[9]   = ^dados_ascii;     // paridade par (reducao XOR)
+    assign s_dados[10]  = 1'b1;             // stop bit
 
     // Instanciação do deslocador_n
     deslocador_n #(

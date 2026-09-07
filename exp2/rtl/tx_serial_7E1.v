@@ -1,9 +1,10 @@
 /* -------------------------------------------------------------
- * Arquivo   : tx_serial_7N2.v
+ * Arquivo   : tx_serial_7E1.v
  *--------------------------------------------------------------
- * Descricao : circuito base de transmissao serial assincrona
+ * Descricao : circuito de transmissao serial assincrona da
+ *             Atividade 2, derivado do projeto base 7N2
  *             ==> comunicacao serial de 7 bits de dados,
- *                 sem partidade, 2 stop bits e 9600 bauds
+ *                 paridade par, 1 stop bit e 115200 bauds
  *
  * entradas : partida, dados_ascii
  * saidas   : saida_serial, pronto
@@ -14,6 +15,9 @@
  * Revisoes  :
  *     Data        Versao  Autor             Descricao
  *     30/08/2025  1.0     Edson Midorikawa  criacao
+ *     07/09/2026  2.0     Bancada A5        adaptacao para 7E1 a 115200
+ *                                           bauds (divisor M=434, N=9 e
+ *                                           novo fluxo de dados)
  *--------------------------------------------------------------
  */
 
