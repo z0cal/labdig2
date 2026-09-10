@@ -1,0 +1,22 @@
+# gerado por fpga-new (DE0-CV) — recriado a cada adocao
+# Simulacao
+.sim/
+work/
+transcript
+*.wlf
+*.vcd
+*.fst
+*.vstf
+.nvim/
+
+# Quartus: todos ficam confinados ao perfil da placa
+quartus/de0_cv/db/
+quartus/de0_cv/incremental_db/
+quartus/de0_cv/output_files/
+quartus/de0_cv/simulation/
+quartus/de0_cv/greybox_tmp/
+quartus/de0_cv/*.qws
+quartus/de0_cv/*.smsg
+
+# Backups da infraestrutura regenerada
+*.bak

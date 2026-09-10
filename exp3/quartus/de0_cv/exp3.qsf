@@ -1,0 +1,104 @@
+# Projeto DE0-CV (5CEBA4F23C7) — esqueleto gerado por fpga-new.
+# A lista de fontes fica entre os marcadores e e regenerada por 'make sync'.
+# Pinos, timing e demais assignments sao seus: nada aqui os reescreve.
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CEBA4F23C7
+set_global_assignment -name TOP_LEVEL_ENTITY exp3_sensor
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name SDC_FILE ../../constraints/de0_cv.sdc
+
+# >>> fpga-sync: fontes de sintese (gerado a partir de rtl/ — nao edite) >>>
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_bcd_3digitos.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm_uc-PARCIAL.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_m.v
+set_global_assignment -name VERILOG_FILE ../../rtl/edge_detector.v
+set_global_assignment -name VERILOG_FILE ../../rtl/exp3_sensor.v
+set_global_assignment -name VERILOG_FILE ../../rtl/gerador_pulso.v
+set_global_assignment -name VERILOG_FILE ../../rtl/hexa7seg.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04_fd-PARCIAL.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04_uc-PARCIAL.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04.v
+set_global_assignment -name VERILOG_FILE ../../rtl/registrador_n.v
+# <<< fpga-sync <<<
+
+# Pinagem do top (exp3_sensor) — complete os PIN_?? pelo Pin Planner
+# (make gui) ou pelo manual da DE0-CV, e descomente a linha.
+# set_location_assignment PIN_?? -to clock
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clock
+# set_location_assignment PIN_?? -to reset
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to reset
+# set_location_assignment PIN_?? -to medir
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to medir
+# set_location_assignment PIN_?? -to echo
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to echo
+# set_location_assignment PIN_?? -to trigger
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to trigger
+# set_location_assignment PIN_?? -to hex0[0]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[0]
+# set_location_assignment PIN_?? -to hex0[1]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[1]
+# set_location_assignment PIN_?? -to hex0[2]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[2]
+# set_location_assignment PIN_?? -to hex0[3]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[3]
+# set_location_assignment PIN_?? -to hex0[4]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[4]
+# set_location_assignment PIN_?? -to hex0[5]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[5]
+# set_location_assignment PIN_?? -to hex0[6]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex0[6]
+# set_location_assignment PIN_?? -to hex1[0]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[0]
+# set_location_assignment PIN_?? -to hex1[1]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[1]
+# set_location_assignment PIN_?? -to hex1[2]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[2]
+# set_location_assignment PIN_?? -to hex1[3]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[3]
+# set_location_assignment PIN_?? -to hex1[4]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[4]
+# set_location_assignment PIN_?? -to hex1[5]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[5]
+# set_location_assignment PIN_?? -to hex1[6]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex1[6]
+# set_location_assignment PIN_?? -to hex2[0]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[0]
+# set_location_assignment PIN_?? -to hex2[1]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[1]
+# set_location_assignment PIN_?? -to hex2[2]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[2]
+# set_location_assignment PIN_?? -to hex2[3]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[3]
+# set_location_assignment PIN_?? -to hex2[4]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[4]
+# set_location_assignment PIN_?? -to hex2[5]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[5]
+# set_location_assignment PIN_?? -to hex2[6]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex2[6]
+# set_location_assignment PIN_?? -to pronto
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to pronto
+# set_location_assignment PIN_?? -to db_medir
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_medir
+# set_location_assignment PIN_?? -to db_echo
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_echo
+# set_location_assignment PIN_?? -to db_trigger
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_trigger
+# set_location_assignment PIN_?? -to db_estado[0]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[0]
+# set_location_assignment PIN_?? -to db_estado[1]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[1]
+# set_location_assignment PIN_?? -to db_estado[2]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[2]
+# set_location_assignment PIN_?? -to db_estado[3]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[3]
+# set_location_assignment PIN_?? -to db_estado[4]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[4]
+# set_location_assignment PIN_?? -to db_estado[5]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[5]
+# set_location_assignment PIN_?? -to db_estado[6]
+# set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to db_estado[6]
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
