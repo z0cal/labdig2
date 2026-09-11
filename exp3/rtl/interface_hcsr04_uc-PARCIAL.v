@@ -48,22 +48,27 @@ module interface_hcsr04_uc (
     always @(*) begin
         case (Eatual)
             inicial: 
-                /* completar */
 
+              if (medir) Eprox = preparacao;
+              else Eprox = inicial;
+                
             preparacao: 
-                /* completar */
+              Eprox = envia_trigger;
+
 
             envia_trigger:
-                /* completar */
+              Eprox = espera_echo;
 
             espera_echo: 
-                /* completar */
+              if(echo) Eprox = medida;
+              else Eprox = espera_echo;
 
             medida: 
-                /* completar */
+              if (fim_medida) Eprox = armazenamento;
+              else            Eprox = medida;
 
             armazenamento:
-                /* completar */
+              Eprox = final_medida;
 
             final_medida: 
                 Eprox = inicial;
@@ -80,7 +85,20 @@ module interface_hcsr04_uc (
             default:    zera = 1'b0;
         endcase
 
-        /* completar para outras saidas */
+        case (Eatual)
+            envia_trigger: gera = 1'b1;
+            default:       gera = 1'b0;
+        endcase
+
+        case (Eatual)
+            armazenamento: registra = 1'b1;
+            default:       registra = 1'b0;
+        endcase
+
+        case (Eatual)
+            final_medida: pronto = 1'b1;
+            default:      pronto = 1'b0;
+        endcase
 
         case (Eatual)
             inicial:       db_estado = 4'b0000;
