@@ -29,12 +29,11 @@ module contador_cm_uc (
     reg [2:0] Eatual, Eprox; // 3 bits são suficientes para os estados
 
     // Parâmetros para os estados
-	/* completar */
-    parameter X = 3'b000;
-    parameter Y = 3'b001;
-    parameter Z = 3'b010;
-    parameter W = 3'b011;
-    parameter F = 3'b100;
+    parameter inicial  = 3'b000;  // ocioso
+    parameter zerar    = 3'b001;  // limpa 
+    parameter espera   = 3'b010;  // contador de clocks correndo
+    parameter conta_cm = 3'b011;  // conta cm rs
+    parameter fim      = 3'b100;  // cabou
 
     // Memória de estado
     always @(posedge clock, posedge reset) begin
@@ -47,15 +46,57 @@ module contador_cm_uc (
     // Lógica de próximo estado
     always @(*) begin
         case (Eatual)
-            /* completar */
+            inicial:
+                if (pulso) Eprox = zerar;
+                else       Eprox = inicial;
+
+            zerar:
+                Eprox = espera;
+
+            espera:
+                if (!pulso)    Eprox = fim;
+                else if (tick) Eprox = conta_cm;
+                else           Eprox = espera;
+
+            conta_cm:
+                Eprox = espera;
+
+            fim:
+                Eprox = inicial;
+
+            default:
+                Eprox = inicial;
         endcase
     end
 
     // Lógica de saída (Moore)
     always @(*) begin
-	
-        /* completar */
-		
+
+        case (Eatual)
+            zerar:   zera_tick = 1'b1;
+            default: zera_tick = 1'b0;
+        endcase
+
+        case (Eatual)
+            espera, conta_cm: conta_tick = 1'b1;
+            default:          conta_tick = 1'b0;
+        endcase
+
+        case (Eatual)
+            zerar:   zera_bcd = 1'b1;
+            default: zera_bcd = 1'b0;
+        endcase
+
+        case (Eatual)
+            conta_cm: conta_bcd = 1'b1;
+            default:  conta_bcd = 1'b0;
+        endcase
+
+        case (Eatual)
+            fim:     pronto = 1'b1;
+            default: pronto = 1'b0;
+        endcase
+
     end
 
 endmodule
