@@ -18,5 +18,16 @@ quartus/de0_cv/greybox_tmp/
 quartus/de0_cv/*.qws
 quartus/de0_cv/*.smsg
 
+# Quartus do desafio (quartus/desafio)
+quartus/desafio/db/
+quartus/desafio/incremental_db/
+quartus/desafio/output_files/
+quartus/desafio/greybox_tmp/
+quartus/desafio/*.qws
+quartus/desafio/*.smsg
+quartus/desafio/*.qar
+quartus/desafio/*.qarlog
+quartus/desafio/compile.log
+
 # Backups da infraestrutura regenerada
 *.bak

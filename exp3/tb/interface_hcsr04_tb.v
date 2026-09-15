@@ -6,6 +6,7 @@
  *              casos 1 a 6: medidas (limite minimo, exatas, truncamento,
  *              arredondamento e valor alto), com verificacao automatica
  *              caso 7: reset durante o estado medida
+ *              monitores: trigger de 10us apos medir e pronto de 1 ciclo
  *
  * --------------------------------------------------------------------------
  *  Revisoes  :
@@ -57,6 +58,38 @@ module interface_hcsr04_tb;
     // Largura do pulso
     reg [31:0] larguraPulso; // Usando 32 bits para acomodar tempos maiores
 
+    // Monitores (nao alteram os estimulos): trigger de 10us logo depois de
+    // medir e pronto com 1 periodo de clock
+    reg     verifica  = 0;
+    integer n_trigger = 0;
+    integer n_pronto  = 0;
+    time    t_medir   = 0;
+    time    t_trigger = 0;
+    time    t_pronto  = 0;
+    always @(posedge medir_in) t_medir = $time;
+    always @(posedge trigger_out) begin
+        n_trigger = n_trigger + 1;
+        t_trigger = $time;
+        if (verifica && ($time - t_medir) > 5*clockPeriod) begin
+            $display("  ERRO: trigger %0d ns depois de medir", $time - t_medir);
+            erros = erros + 1;
+        end
+    end
+    always @(negedge trigger_out)
+        if (verifica && ($time - t_trigger) != 10_000) begin
+            $display("  ERRO: trigger com %0d ns (esperado 10000 ns)", $time - t_trigger);
+            erros = erros + 1;
+        end
+    always @(posedge pronto_out) begin
+        n_pronto = n_pronto + 1;
+        t_pronto = $time;
+    end
+    always @(negedge pronto_out)
+        if (verifica && ($time - t_pronto) != clockPeriod) begin
+            $display("  ERRO: pronto com %0d ns (esperado %0d ns)", $time - t_pronto, clockPeriod);
+            erros = erros + 1;
+        end
+
     // Geração dos sinais de entrada (estímulos)
     initial begin
         $display("Inicio das simulacoes");
@@ -80,6 +113,7 @@ module interface_hcsr04_tb;
         #(2_000); // 2 us
         reset_in = 0;
         @(negedge clock_in);
+        verifica = 1;
 
         // Espera de 100us
         #(100_000); // 100 us
@@ -179,9 +213,18 @@ module interface_hcsr04_tb;
         $display("Fim do caso 7");
         #(100_000); // 100 us
 
+        // Pulsos: 8 medidas iniciadas (6 + 2 do caso 7) e 7 concluidas
+        if (n_trigger == 8 && n_pronto == 7)
+            $display("Pulsos: OK   8 triggers de 10us e 7 prontos de 1 ciclo de clock");
+        else begin
+            $display("Pulsos: ERRO %0d triggers e %0d prontos (esperado 8 e 7)",
+                     n_trigger, n_pronto);
+            erros = erros + 1;
+        end
+
         // Fim da simulação
         if (erros == 0) $display("Fim das simulacoes: todos os casos OK");
-        else            $display("Fim das simulacoes: %0d erro(s)", erros);
+        else            $display("FALHA: %0d erro(s)", erros);
         caso = 99;
         $stop;
     end
