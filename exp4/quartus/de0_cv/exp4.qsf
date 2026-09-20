@@ -16,6 +16,9 @@ set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm.v
 set_global_assignment -name VERILOG_FILE ../../rtl/contador_m.v
 set_global_assignment -name VERILOG_FILE ../../rtl/deslocador_n.v
 set_global_assignment -name VERILOG_FILE ../../rtl/edge_detector.v
+set_global_assignment -name VERILOG_FILE ../../rtl/exp4_trena_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/exp4_trena_uc.v
+set_global_assignment -name VERILOG_FILE ../../rtl/exp4_trena.v
 set_global_assignment -name VERILOG_FILE ../../rtl/gerador_pulso.v
 set_global_assignment -name VERILOG_FILE ../../rtl/hexa7seg.v
 set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04_fd.v
@@ -30,6 +33,5 @@ set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_uc.v
 
 # Pinagem do top (exp4_trena) — complete os PIN_?? pelo Pin Planner
 # (make gui) ou pelo manual da DE0-CV, e descomente a linha.
-# (o top ainda nao existe: depois de escreve-lo, rode 'fpga-sync --pins')
 
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

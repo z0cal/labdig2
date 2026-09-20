@@ -12,7 +12,6 @@
  * Revisoes  :
  *     Data        Versao  Autor             Descricao
  *     30/08/2025  1.0     Edson Midorikawa  criacao
- *     07/09/2026  2.0     Bancada A5        montagem do quadro 7E1
  *--------------------------------------------------------------
  */
 
