@@ -1,0 +1,35 @@
+# Projeto DE0-CV (5CEBA4F23C7) — esqueleto gerado por fpga-new.
+# A lista de fontes fica entre os marcadores e e regenerada por 'make sync'.
+# Pinos, timing e demais assignments sao seus: nada aqui os reescreve.
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CEBA4F23C7
+set_global_assignment -name TOP_LEVEL_ENTITY exp4_trena
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name SDC_FILE ../../constraints/de0_cv.sdc
+
+# >>> fpga-sync: fontes de sintese (gerado a partir de rtl/ — nao edite) >>>
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_bcd_3digitos.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm_uc.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_cm.v
+set_global_assignment -name VERILOG_FILE ../../rtl/contador_m.v
+set_global_assignment -name VERILOG_FILE ../../rtl/deslocador_n.v
+set_global_assignment -name VERILOG_FILE ../../rtl/edge_detector.v
+set_global_assignment -name VERILOG_FILE ../../rtl/gerador_pulso.v
+set_global_assignment -name VERILOG_FILE ../../rtl/hexa7seg.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04_uc.v
+set_global_assignment -name VERILOG_FILE ../../rtl/interface_hcsr04.v
+set_global_assignment -name VERILOG_FILE ../../rtl/mux_4x1_n.v
+set_global_assignment -name VERILOG_FILE ../../rtl/registrador_n.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_7E1_fd.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_7E1.v
+set_global_assignment -name VERILOG_FILE ../../rtl/tx_serial_uc.v
+# <<< fpga-sync <<<
+
+# Pinagem do top (exp4_trena) — complete os PIN_?? pelo Pin Planner
+# (make gui) ou pelo manual da DE0-CV, e descomente a linha.
+# (o top ainda nao existe: depois de escreve-lo, rode 'fpga-sync --pins')
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
