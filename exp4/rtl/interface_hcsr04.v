@@ -23,10 +23,17 @@ module interface_hcsr04 (
 
     // Sinais internos
     wire        s_zera;
+    wire        s_limpa;
     wire        s_gera;
     wire        s_registra;
     wire        s_fim_medida;
     wire [11:0] s_medida;
+
+    // O reset global tambem limpa o fluxo de dados (gerador de pulso,
+    // contador de cm e registrador da medida). Sem isso o reset zera apenas
+    // as maquinas de estados e a ultima medida continuaria nos displays,
+    // contrariando o requisito de voltar a condicao inicial com medida 000.
+    assign s_limpa = s_zera | reset;
 
     // Unidade de controle
     interface_hcsr04_uc U1 (
@@ -46,7 +53,7 @@ module interface_hcsr04 (
     interface_hcsr04_fd U2 (
         .clock     (clock       ),
         .pulso     (echo        ), 
-        .zera      (s_zera      ),
+        .zera      (s_limpa     ),
         .gera      (s_gera      ),
         .registra  (s_registra  ),
         .fim_medida(s_fim_medida),

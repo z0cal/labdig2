@@ -34,6 +34,9 @@ module mux_4x1_n_tb;
 
     logic [BITS-1:0] vetor_teste [9:0][5:0];
 
+    // Contador de verificacoes que falharam, lido pelo simula_todos.do
+    integer erros = 0;
+
     initial begin
         // inicializa vetor de teste com diversos casos de teste
         //                D3_IN, D2_IN, D1_IN, D0_IN, SEL_OUT, MUX_OUT (saida esperada)
@@ -68,15 +71,18 @@ module mux_4x1_n_tb;
                      // caso, SEL_IN, D0_IN, D1_IN, D2_IN, D3_IN, MUX_OUT, vetor_teste[caso][0]);
 
             // verifica saida do mux com o valor esperado presente no vetor de teste
-            if (MUX_OUT != vetor_teste[caso][0])
+            if (MUX_OUT != vetor_teste[caso][0]) begin
+                erros = erros + 1;
                 $display("caso %d: TESTE FALHOU! SEL=%b, D0=%h, D1=%h, D2=%h, D3=%h, MUX_OUT=%h (esperado=%h)",
                          caso, SEL_IN, D0_IN, D1_IN, D2_IN, D3_IN, MUX_OUT, vetor_teste[caso][0]);
+            end
             else
                 $display("caso %d: TESTE OK! SEL=%b, D0=%h, D1=%h, D2=%h, D3=%h, MUX_OUT=%h (esperado=%h)",
                          caso, SEL_IN, D0_IN, D1_IN, D2_IN, D3_IN, MUX_OUT, vetor_teste[caso][0]);
         end
 
-        $display("fim da simulacao");
+        if (erros == 0) $display("Fim das simulacoes: todos os casos OK");
+        else            $display("FALHA: %0d erro(s)", erros);
         $stop; 
     end
 
