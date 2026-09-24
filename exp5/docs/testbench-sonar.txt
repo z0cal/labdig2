@@ -1,0 +1,24 @@
+Estrutura geral do testbench do circuito da Sistema de Sonar
+
+1.  definicao de sinais internos
+2.  instanciacao do DUT
+3.  definicao dos casos de teste
+4.  valores iniciais e reset
+5.  espera 100us para inicio de operacao do Sonar
+6.  ajustar ligar=1
+7.  espera 100us para inicio dos ciclos de medidas
+8.  loop dos casos de teste
+8.1     atribui sinal com valor do caso de teste (largura de pulso Echo)
+8.2     espera pelo pulso de Trigger (trigger=1)
+8.3     espera 400us (tempo entre pulsos Trigger e Echo)
+8.4     gera pulso Echo com largura definida no caso de teste
+8.5     espera pelo final do ciclo (fim_posicao=1)
+8.6     espera 100us entre casos de teste
+9.  ajustar ligar=0
+10. espera 100us antes de finalizar a simulacao
+11. fim da simulacao
+
+DICAS: 
+- usar comandos dos testbenches das experiências 2, 3 e 4;
+- ajustar tempo de espera no ciclo de medidas de 2s para 200us para reduzir o tempo para realização das simulações.
+
