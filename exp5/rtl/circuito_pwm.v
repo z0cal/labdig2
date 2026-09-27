@@ -10,19 +10,24 @@
  *     26/09/2021  1.0     Edson Midorikawa  criacao do componente VHDL
  *     17/08/2024  2.0     Edson Midorikawa  componente em Verilog
  *     28/08/2025  2.1     Edson Midorikawa  revisao do componente
+ *     27/09/2026  3.0     T1BA5             8 larguras (entrada de 3 bits)
  * ------------------------------------------------------------------------
  */
  
 module circuito_pwm #(    // valores default
     parameter conf_periodo = 1250, // Período do sinal PWM [1250 => f=40KHz (25us)]
-    parameter largura_00   = 0,    // Largura do pulso p/ 00 [0 => 0]
-    parameter largura_01   = 50,   // Largura do pulso p/ 01 [50 => 1us]
-    parameter largura_10   = 500,  // Largura do pulso p/ 10 [500 => 10us]
-    parameter largura_11   = 1000  // Largura do pulso p/ 11 [1000 => 20us]
+    parameter largura_000  = 0,    // Largura do pulso p/ 000
+    parameter largura_001  = 50,
+    parameter largura_010  = 100,
+    parameter largura_011  = 250,
+    parameter largura_100  = 500,
+    parameter largura_101  = 750,
+    parameter largura_110  = 1000,
+    parameter largura_111  = 1250  // Largura do pulso p/ 111
 ) (
     input        clock,
     input        reset,
-    input  [1:0] largura,
+    input  [2:0] largura,
     output wire   pwm,
     output wire   db_pwm
 );
@@ -37,7 +42,7 @@ always @(posedge clock or posedge reset) begin
     if (reset) begin
         contagem <= 0;
         s_pwm <= 0;
-        largura_pwm <= largura_00; // Valor inicial da largura do pulso
+        largura_pwm <= largura_000; // Valor inicial da largura do pulso
     end else begin
         // Saída PWM
         s_pwm <= (contagem < largura_pwm);
@@ -46,11 +51,15 @@ always @(posedge clock or posedge reset) begin
         if (contagem == conf_periodo - 1) begin
             contagem <= 0;
             case (largura)
-                2'b00: largura_pwm <= largura_00;
-                2'b01: largura_pwm <= largura_01;
-                2'b10: largura_pwm <= largura_10;
-                2'b11: largura_pwm <= largura_11;
-                default: largura_pwm <= largura_00; // Valor padrão
+                3'b000: largura_pwm <= largura_000;
+                3'b001: largura_pwm <= largura_001;
+                3'b010: largura_pwm <= largura_010;
+                3'b011: largura_pwm <= largura_011;
+                3'b100: largura_pwm <= largura_100;
+                3'b101: largura_pwm <= largura_101;
+                3'b110: largura_pwm <= largura_110;
+                3'b111: largura_pwm <= largura_111;
+                default: largura_pwm <= largura_000; // Valor padrão
             endcase
         end else begin
             contagem <= contagem + 1;

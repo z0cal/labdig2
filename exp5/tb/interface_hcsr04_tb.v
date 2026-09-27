@@ -31,6 +31,8 @@ module interface_hcsr04_tb;
     wire        trigger_out;
     wire [11:0] medida_out;
     wire        pronto_out;
+    wire        db_reset_out;
+    wire        db_medir_out;
     wire [3:0]  db_estado_out;
 
     // Componente a ser testado (Device Under Test -- DUT)
@@ -42,6 +44,8 @@ module interface_hcsr04_tb;
         .trigger  (trigger_out  ),
         .medida   (medida_out   ),
         .pronto   (pronto_out   ),
+        .db_reset (db_reset_out ),
+        .db_medir (db_medir_out ),
         .db_estado(db_estado_out)
     );
 

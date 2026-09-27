@@ -26,6 +26,7 @@
  *     Data        Versao  Autor             Descricao
  *     30/08/2025  1.0     Edson Midorikawa  criacao
  *     21/09/2026  2.0     T1BA5             versao da Experiencia 4
+ *     27/09/2026  3.0     T1BA5             interface do sonar (Fig. 4)
  *--------------------------------------------------------------
  */
 
@@ -41,8 +42,10 @@ module tx_serial_7E1_tb;
 
     wire       saida_serial_out;
     wire       pronto_out;
-    wire       db_tick_out;
+    wire       db_partida_out;
+    wire       db_saida_serial_out;
     wire [3:0] db_estado_out;
+    wire       db_tick_out = dut.s_tick;  // tick interno (sem porta)
 
     // Componente a ser testado (Device Under Test -- DUT)
     tx_serial_7E1 dut (
@@ -51,9 +54,10 @@ module tx_serial_7E1_tb;
         .partida      (partida_in      ),
         .dados_ascii  (dados_ascii_in  ),
         .saida_serial (saida_serial_out),
-        .pronto       (pronto_out      ),
-        .db_tick      (db_tick_out     ),
-        .db_estado    (db_estado_out   )
+        .pronto         (pronto_out         ),
+        .db_partida     (db_partida_out     ),
+        .db_saida_serial(db_saida_serial_out),
+        .db_estado      (db_estado_out      )
     );
 
     // Configuracao do clock

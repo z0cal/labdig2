@@ -1,6 +1,7 @@
 # gerado por fpga-new (DE0-CV) — recriado a cada adocao
 # Simulacao
 .sim/
+.nvim/
 work/
 transcript
 *.wlf

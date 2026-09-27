@@ -15,12 +15,13 @@
  *
  * entradas : partida, dados_ascii
  * saidas   : saida_serial, pronto
- * depuracao: db_tick e db_estado (4 bits, sem decodificacao)
+ * depuracao: db_partida, db_saida_serial e db_estado (4 bits)
  *
  *--------------------------------------------------------------
  * Revisoes  :
  *     Data        Versao  Autor             Descricao
  *     30/08/2025  1.0     Edson Midorikawa  criacao
+ *     27/09/2026  2.0     T1BA5             interface do sonar (Fig. 4)
  *--------------------------------------------------------------
  */
 
@@ -31,7 +32,8 @@ module tx_serial_7E1 (
     input [6:0]  dados_ascii  ,
     output       saida_serial , // saidas
     output       pronto       ,
-    output       db_tick      , // saidas de depuracao
+    output       db_partida   , // saidas de depuracao
+    output       db_saida_serial,
     output [3:0] db_estado
 );
 
@@ -89,6 +91,7 @@ module tx_serial_7E1 (
     assign saida_serial = s_saida_serial;
 
     // depuracao
-    assign db_tick = s_tick;
+    assign db_partida      = partida;
+    assign db_saida_serial = s_saida_serial;
 
 endmodule
