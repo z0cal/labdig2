@@ -11,6 +11,9 @@ module rom_angulos_8x24_tb;
   logic [2:0] endereco;
   wire [23:0] saida;
 
+  // Contador de verificacoes que falharam, lido pelo simula_todos.do
+  integer erros = 0;
+
   // instanciacao do modulo ROM 
   rom_angulos_8x24 dut (
     .endereco(endereco),
@@ -31,14 +34,18 @@ module rom_angulos_8x24_tb;
 
       // verifica se saida da ROM é igual ao valor esperado
       assert(saida == dut.tabela_angulos[i]) 
-        else $error("Erro no endereco %0d: Esperado=%h, Saida=%h", 
-                    i, dut.tabela_angulos[i], saida);
+        else begin
+          erros = erros + 1;
+          $error("Erro no endereco %0d: Esperado=%h, Saida=%h", 
+                 i, dut.tabela_angulos[i], saida);
+        end
 
       // Incrementa endereco da varredura
       endereco = endereco + 1;
     end
 
-    $display("Fim dos testes!");
+    if (erros == 0) $display("Fim dos testes: todos os casos OK");
+    else            $display("FALHA: %0d erro(s)", erros);
     $stop;
   end
 
