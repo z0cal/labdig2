@@ -1,0 +1,138 @@
+// Diagrama de blocos do fluxo de dados do sonar modificado (sonar2_fd).
+// Gerar:  dot -Tsvg fd_sonar2.dot -o fd_sonar2.svg
+//         dot -Tpdf fd_sonar2.dot -o fd_sonar2.pdf
+digraph sonar2_fd {
+    graph [rankdir=LR, fontname="Helvetica", fontsize=12, newrank=true,
+           nodesep=0.22, ranksep=0.55, splines=spline, labelloc=t,
+           label=<<b>sonar2_fd</b>: fluxo de dados do sonar modificado<br/>
+<font point-size="10">entradas a esquerda (sinais de controle da UC em azul), saidas a direita (sinais de condicao para a UC em verde).<br/>
+Em laranja, o que entrou na exp6: recepcao serial e deteccao dos comandos. Saidas de depuracao omitidas.</font>>];
+    node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="white"];
+    edge  [fontname="Helvetica", fontsize=8, arrowsize=0.6];
+
+    // ---------------------------------------------------------------
+    // Entradas
+    // ---------------------------------------------------------------
+    node [shape=plaintext, style="", fontsize=10];
+    i_reset          [label="reset"];
+    i_echo           [label="echo"];
+    i_entrada_serial [label="entrada_serial"];
+    i_zera           [label="zera",          fontcolor="#1d4ed8"];
+    i_mede           [label="mede",          fontcolor="#1d4ed8"];
+    i_limpa_sensor   [label="limpa_sensor",  fontcolor="#1d4ed8"];
+    i_conta_posicao  [label="conta_posicao", fontcolor="#1d4ed8"];
+    i_conta_char     [label="conta_char",    fontcolor="#1d4ed8"];
+    i_transmite      [label="transmite",     fontcolor="#1d4ed8"];
+    i_conta_espera   [label="conta_espera",  fontcolor="#1d4ed8"];
+    i_conta_timeout  [label="conta_timeout", fontcolor="#1d4ed8"];
+
+    // ---------------------------------------------------------------
+    // Saidas
+    // ---------------------------------------------------------------
+    o_trigger         [label="trigger"];
+    o_pwm             [label="pwm"];
+    o_saida_serial    [label="saida_serial"];
+    o_fim_medida      [label="fim_medida",      fontcolor="#15803d"];
+    o_fim_char        [label="fim_char",        fontcolor="#15803d"];
+    o_fim_transmissao [label="fim_transmissao", fontcolor="#15803d"];
+    o_fim_espera      [label="fim_espera",      fontcolor="#15803d"];
+    o_fim_timeout     [label="fim_timeout",     fontcolor="#15803d"];
+    o_recebeu_atencao [label="recebeu_atencao", fontcolor="#15803d"];
+    o_recebeu_voltar  [label="recebeu_voltar",  fontcolor="#15803d"];
+
+    // ---------------------------------------------------------------
+    // Componentes
+    // ---------------------------------------------------------------
+    node [shape=box, style="rounded,filled", fillcolor="white", fontsize=10];
+
+    or_limpa  [shape=circle, label="OR", width=0.35, fixedsize=true, fontsize=8];
+    or_sensor [shape=circle, label="OR", width=0.35, fixedsize=true, fontsize=8];
+
+    subgraph cluster_sensor {
+        label="Medida de distancia"; style="rounded"; color="gray50"; fontsize=10;
+        U1 [label=<<b>U1 interface_hcsr04</b><br/>medir, echo<br/>trigger, medida, pronto>];
+    }
+
+    subgraph cluster_servo {
+        label="Servomotor"; style="rounded"; color="gray50"; fontsize=10;
+        U4 [label=<<b>U4 contador_m</b> (M=8)<br/>posicao 000..111>];
+        U3 [label=<<b>U3 controle_servo_8</b><br/>pwm de 8 posicoes>];
+    }
+
+    subgraph cluster_msg {
+        label=<Mensagem "aaa,ddd#">; style="rounded"; color="gray50"; fontsize=10;
+        U5 [label=<<b>U5 rom_angulos_8x24</b><br/>angulo em ASCII>];
+        U6 [label=<<b>U6 contador_m</b> (M=8)<br/>indice do caractere>];
+        U7 [label=<<b>U7 mux_8x1_n</b> (7 bits)<br/>aaa , ddd #>];
+        U2 [label=<<b>U2 tx_serial_7E1</b><br/>115200 bauds>];
+    }
+
+    subgraph cluster_tempo {
+        label="Temporizadores"; style="rounded"; color="gray50"; fontsize=10;
+        U8 [label=<<b>U8 contador_m</b><br/>M = ESPERA (2 s)>];
+        U9 [label=<<b>U9 contador_m</b><br/>M = TIMEOUT (10 s)>];
+    }
+
+    subgraph cluster_rx {
+        label=<<b>Recepcao de comandos (exp6)</b>>; style="rounded,filled";
+        fillcolor="#ffedd5"; color="#c2410c"; fontcolor="#c2410c"; fontsize=10;
+        U10 [label=<<b>U10 rx_serial_7E1</b><br/>115200 bauds>];
+        CMP [label=<<b>comparadores</b><br/>valido = pronto &amp; paridade_ok<br/>valido &amp; (dado == 'a')<br/>valido &amp; (dado == 'v')>];
+    }
+
+    // ---------------------------------------------------------------
+    // Ligacoes
+    // ---------------------------------------------------------------
+    // reinicio dos submodulos
+    i_reset        -> or_limpa;
+    i_zera         -> or_limpa  [color="#1d4ed8"];
+    or_limpa       -> or_sensor [label="s_limpa"];
+    i_limpa_sensor -> or_sensor [color="#1d4ed8"];
+    or_sensor      -> U1        [label="reset"];
+    or_limpa       -> U2        [label="reset"];
+
+    // sensor
+    i_mede -> U1 [label="medir", color="#1d4ed8"];
+    i_echo -> U1;
+    U1 -> o_trigger;
+    U1 -> o_fim_medida [color="#15803d"];
+    U1 -> U7           [label="medida[11:0]"];
+
+    // servo
+    i_conta_posicao -> U4 [label="conta", color="#1d4ed8"];
+    i_zera          -> U4 [label="zera_s", color="#1d4ed8"];
+    U4 -> U3 [label="posicao[2:0]"];
+    U4 -> U5 [label="posicao[2:0]"];
+    U3 -> o_pwm;
+
+    // mensagem
+    i_conta_char -> U6 [label="conta", color="#1d4ed8"];
+    i_zera       -> U6 [label="zera_s", color="#1d4ed8"];
+    U5 -> U7 [label="angulo[23:0]"];
+    U6 -> U7 [label="SEL[2:0]"];
+    U6 -> o_fim_char [color="#15803d"];
+    U7 -> U2 [label="dados_ascii[6:0]"];
+    i_transmite -> U2 [label="partida", color="#1d4ed8"];
+    U2 -> o_saida_serial;
+    U2 -> o_fim_transmissao [color="#15803d"];
+
+    // temporizadores
+    i_conta_espera  -> U8 [label="conta", color="#1d4ed8"];
+    i_zera          -> U8 [label="zera_s", color="#1d4ed8"];
+    U8 -> o_fim_espera [color="#15803d"];
+    i_conta_timeout -> U9 [label="conta", color="#1d4ed8"];
+    i_mede          -> U9 [label="zera_s", color="#1d4ed8"];
+    U9 -> o_fim_timeout [color="#15803d"];
+
+    // comandos
+    i_entrada_serial -> U10 [label="RX"];
+    U10 -> CMP [label="pronto, dados_ascii,\nparidade_par"];
+    CMP -> o_recebeu_atencao [color="#15803d"];
+    CMP -> o_recebeu_voltar  [color="#15803d"];
+
+    // entradas na primeira coluna, saidas na ultima
+    { rank=min; i_reset; i_echo; i_entrada_serial; i_zera; i_mede; i_limpa_sensor;
+      i_conta_posicao; i_conta_char; i_transmite; i_conta_espera; i_conta_timeout; }
+    { rank=max; o_trigger; o_pwm; o_saida_serial; o_fim_medida; o_fim_char;
+      o_fim_transmissao; o_fim_espera; o_fim_timeout; o_recebeu_atencao; o_recebeu_voltar; }
+}

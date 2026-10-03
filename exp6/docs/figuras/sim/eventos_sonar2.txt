@@ -1,0 +1,39 @@
+sim_sonar2_geral janela 0 90126030
+sim_sonar2_ciclo trigger 1961210
+sim_sonar2_ciclo echo_sobe 2361210
+sim_sonar2_ciclo echo_desce 3361150
+sim_sonar2_ciclo inicio_tx 3369970
+sim_sonar2_ciclo fim_posicao 4126050
+sim_sonar2_ciclo janela 1741150 4156050
+sim_sonar2_comando_a start_bit 7569750
+sim_sonar2_comando_a rx_pronto 7652310
+sim_sonar2_comando_a janela 7564750 7657310
+sim_sonar2_bifurcacao_atencao fim_posicao 12679170
+sim_sonar2_bifurcacao_atencao janela 12679110 12679230
+sim_sonar2_ignorados quadro1 15828750
+sim_sonar2_ignorados quadro2 15915550
+sim_sonar2_ignorados quadro3 16002350
+sim_sonar2_ignorados quadro4 16089150
+sim_sonar2_ignorados janela 15818750 16201710
+sim_sonar2_timeout trigger 17903150
+sim_sonar2_timeout timeout 37903090
+sim_sonar2_timeout fim_posicao 38667930
+sim_sonar2_timeout janela 17683090 38767930
+sim_sonar2_comando_v start_bit 38687950
+sim_sonar2_comando_v rx_pronto 38770510
+sim_sonar2_comando_v janela 38682950 38775510
+sim_sonar2_bifurcacao_localizacao fim_posicao 42679810
+sim_sonar2_bifurcacao_localizacao janela 42679750 42679870
+sim_sonar2_comando_durante_tx trigger 50126870
+sim_sonar2_comando_durante_tx inicio_tx 51241530
+sim_sonar2_comando_durante_tx recebeu_atencao 51324090
+sim_sonar2_comando_durante_tx fim_posicao 51997590
+sim_sonar2_comando_durante_tx janela 50106870 52017590
+sim_sonar2_religar ligar_0 79904250
+sim_sonar2_religar ligar_1 80004250
+sim_sonar2_religar trigger 80204350
+sim_sonar2_religar janela 79884250 80224350
+sim_sonar2_reset start_bit 85624310
+sim_sonar2_reset reset 85711110
+sim_sonar2_reset trigger 85913190
+sim_sonar2_reset janela 85604310 85933190

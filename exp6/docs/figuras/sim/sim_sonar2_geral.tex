@@ -1,0 +1,12 @@
+% Gerado por scripts/anota_ondas.py: forma de onda do ModelSim e anotacoes.
+\begin{tikzpicture}[x=\linewidth/516, y=-\linewidth/516]
+  \node[anchor=north west, inner sep=0] at (0,0)
+    {\includegraphics[width=\linewidth, trim=0 12.7 0 0, clip]{figures/sim/sim_sonar2_geral.pdf}};
+  \draw[sa] (110.6,74.4) node[an, left] {CT4: 'a'} -- (116.6,83.4);
+  \draw[sa] (269.7,74.4) node[an, right] {CT8: 'v'} -- (263.7,83.4);
+  \draw[cota] (117,139.9) -- node[an, below] {modo atenção: posição parada em 3} (264.1,139.9);
+  \draw[cota] (165.5,187.4) -- node[an, below] {CT7: timeout sem echo (20 ms)} (260,187.4);
+  \draw[sa] (317.4,98.1) node[an, left] {CT10 a CT13} -- (323.4,107.1);
+  \draw[sa] (452.4,43.9) node[an, left] {CT18: religar} -- (458.4,35.9);
+  \draw[sa] (479.9,50.6) node[an, left] {CT19: reset} -- (485.9,59.6);
+\end{tikzpicture}

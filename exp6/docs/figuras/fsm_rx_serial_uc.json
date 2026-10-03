@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "top": "rx_serial_uc",
+  "sources": [
+    "/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v"
+  ],
+  "yosys": "Yosys 0.66 (git sha1 86f2ddebc-dirty, g++ 16.1.1 -march=x86-64 -mtune=generic -O2 -fno-plt -fexceptions -fstack-clash-protection -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/yosys/src=/usr/src/debug/yosys -fPIC -O3) [startdir/yosys at makepkg]",
+  "fsms": [
+    {
+      "register": "Eatual",
+      "inputs": [
+        "RX",
+        "tick",
+        "fim",
+        "net_18"
+      ],
+      "states": [
+        {
+          "id": 0,
+          "code": "0000",
+          "name": "inicial",
+          "outputs": {
+            "registra": "0",
+            "zera": "1",
+            "zera_tick": "0",
+            "conta": "0",
+            "carrega": "0",
+            "desloca": "0",
+            "pronto": "0",
+            "db_estado": "0000"
+          }
+        },
+        {
+          "id": 1,
+          "code": "0010",
+          "name": "preparacao",
+          "outputs": {
+            "registra": "0",
+            "zera": "0",
+            "zera_tick": "1",
+            "conta": "0",
+            "carrega": "1",
+            "desloca": "0",
+            "pronto": "0",
+            "db_estado": "0010"
+          }
+        },
+        {
+          "id": 2,
+          "code": "1001",
+          "name": "registrar",
+          "outputs": {
+            "registra": "1",
+            "zera": "0",
+            "zera_tick": "0",
+            "conta": "0",
+            "carrega": "0",
+            "desloca": "0",
+            "pronto": "0",
+            "db_estado": "1001"
+          }
+        },
+        {
+          "id": 3,
+          "code": "0011",
+          "name": "espera",
+          "outputs": {
+            "registra": "0",
+            "zera": "0",
+            "zera_tick": "0",
+            "conta": "0",
+            "carrega": "0",
+            "desloca": "0",
+            "pronto": "0",
+            "db_estado": "0011"
+          }
+        },
+        {
+          "id": 4,
+          "code": "0111",
+          "name": "recepcao",
+          "outputs": {
+            "registra": "0",
+            "zera": "0",
+            "zera_tick": "0",
+            "conta": "1",
+            "carrega": "0",
+            "desloca": "1",
+            "pronto": "0",
+            "db_estado": "0111"
+          }
+        },
+        {
+          "id": 5,
+          "code": "1111",
+          "name": "final_rx",
+          "outputs": {
+            "registra": "0",
+            "zera": "0",
+            "zera_tick": "0",
+            "conta": "0",
+            "carrega": "0",
+            "desloca": "0",
+            "pronto": "1",
+            "db_estado": "1111"
+          }
+        }
+      ],
+      "reset": 0,
+      "transitions": [
+        {
+          "from": 0,
+          "to": 1,
+          "pattern": "---0"
+        },
+        {
+          "from": 0,
+          "to": 0,
+          "pattern": "---1"
+        },
+        {
+          "from": 1,
+          "to": 3,
+          "pattern": "----"
+        },
+        {
+          "from": 2,
+          "to": 5,
+          "pattern": "----"
+        },
+        {
+          "from": 3,
+          "to": 3,
+          "pattern": "-00-"
+        },
+        {
+          "from": 3,
+          "to": 2,
+          "pattern": "-10-"
+        },
+        {
+          "from": 3,
+          "to": 4,
+          "pattern": "--1-"
+        },
+        {
+          "from": 4,
+          "to": 3,
+          "pattern": "----"
+        },
+        {
+          "from": 5,
+          "to": 0,
+          "pattern": "----"
+        }
+      ],
+      "module": "rx_serial_uc",
+      "instances": [
+        "rx_serial_uc"
+      ]
+    }
+  ],
+  "warnings": []
+}

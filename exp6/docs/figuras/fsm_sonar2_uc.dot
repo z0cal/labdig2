@@ -1,0 +1,53 @@
+digraph FSM {
+  rankdir=LR;
+  graph [fontname="sans", fontsize=12];
+  node [shape=ellipse, fontname="sans", fontsize=11];
+  edge [fontname="sans", fontsize=9];
+  subgraph cluster_0 {
+    label="sonar2_uc\nEatual\nSaidas determinadas pelo estado: zera, conta_espera, mede, conta_timeout, limpa_sensor, transmite, conta_char, conta_posicao, db_estado\nSaidas listadas e omitidas no estado valem zero.\nNao determinadas: db_modo, fim_posicao";
+    f0s0 [label="LOCALIZACAO / inicial\n0000"];
+    f0s1 [label="muda_posicao\n1000\nconta_posicao=1\ndb_estado=8"];
+    f0s2 [label="espera_medida\n0100\nconta_timeout=1\ndb_estado=4"];
+    f0s3 [label="espera\n0010\nconta_espera=1\ndb_estado=2"];
+    f0s4 [label="final_atencao\n1010\ndb_estado=10"];
+    f0s5 [label="espera_tx\n0110\ndb_estado=6"];
+    f0s6 [label="ATENCAO / preparacao\n0001\nzera=1\ndb_estado=1"];
+    f0s7 [label="timeout_medida\n1001\nlimpa_sensor=1\ndb_estado=9"];
+    f0s8 [label="envia_char\n0101\ntransmite=1\ndb_estado=5"];
+    f0s9 [label="dispara_medida\n0011\nmede=1\ndb_estado=3"];
+    f0s10 [label="proximo_char\n0111\nconta_char=1\ndb_estado=7"];
+    f0s11 [label="final_posicao\n1111\ndb_estado=15"];
+    start0 [shape=point, width=0.1];
+    start0 -> f0s0 [label="reset"];
+    f0s0 -> f0s0 [label="!ligar"];
+    f0s0 -> f0s6 [label="ligar"];
+    f0s1 -> f0s0 [label="!ligar"];
+    f0s1 -> f0s11 [label="ligar"];
+    f0s2 -> f0s0 [label="!ligar"];
+    f0s2 -> f0s2 [label="ligar & !fim_medida & !fim_timeout"];
+    f0s2 -> f0s7 [label="ligar & !fim_medida & fim_timeout"];
+    f0s2 -> f0s8 [label="ligar & fim_medida"];
+    f0s3 -> f0s0 [label="!ligar"];
+    f0s3 -> f0s3 [label="ligar & !fim_espera"];
+    f0s3 -> f0s9 [label="ligar & fim_espera"];
+    f0s4 -> f0s0 [label="!ligar"];
+    f0s4 -> f0s3 [label="ligar"];
+    f0s5 -> f0s0 [label="!ligar"];
+    f0s5 -> f0s5 [label="ligar & !fim_transmissao"];
+    f0s5 -> f0s10 [label="ligar & fim_transmissao"];
+    f0s6 -> f0s0 [label="!ligar"];
+    f0s6 -> f0s3 [label="ligar"];
+    f0s7 -> f0s0 [label="!ligar"];
+    f0s7 -> f0s8 [label="ligar"];
+    f0s8 -> f0s0 [label="!ligar"];
+    f0s8 -> f0s5 [label="ligar"];
+    f0s9 -> f0s0 [label="!ligar"];
+    f0s9 -> f0s2 [label="ligar"];
+    f0s10 -> f0s0 [label="!ligar"];
+    f0s10 -> f0s1 [label="ligar & fim_char & !db_modo"];
+    f0s10 -> f0s4 [label="ligar & fim_char & db_modo"];
+    f0s10 -> f0s8 [label="ligar & !fim_char"];
+    f0s11 -> f0s0 [label="!ligar"];
+    f0s11 -> f0s3 [label="ligar"];
+  }
+}

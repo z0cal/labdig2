@@ -1,0 +1,55 @@
+// Gerado por scripts/fsm_por_modo.py a partir de docs/figuras/fsm_sonar2_uc.json
+// (estados e transicoes extraidos do RTL pelo Yosys). Nao edite a mao.
+digraph sonar2_uc {
+  graph [fontname="Helvetica", fontsize=14, newrank=true, nodesep=0.25, ranksep=0.3];
+  node  [fontname="Helvetica", fontsize=13, shape=box, style="rounded,filled", fillcolor="white", margin="0.08,0.03"];
+  edge  [fontname="Helvetica", fontsize=12, arrowsize=0.8];
+
+  subgraph cluster_comum {
+    label=<<b>Estados comuns aos dois modos</b>&nbsp;(ciclo da exp5)>;
+    style="rounded,dashed"; color="gray45"; fontsize=14;
+    reset_e [shape=point, width=0.08];
+    inicial [label=<inicial (0)>];
+    espera_medida [label=<espera_medida (4)<br/><font color="gray30">conta_timeout</font>>];
+    espera [label=<espera (2)<br/><font color="gray30">conta_espera</font>>];
+    espera_tx [label=<espera_tx (6)>];
+    preparacao [label=<preparacao (1)<br/><font color="gray30">zera</font>>];
+    timeout_medida [label=<timeout_medida (9)<br/><font color="gray30">limpa_sensor</font>>];
+    envia_char [label=<envia_char (5)<br/><font color="gray30">transmite</font>>];
+    dispara_medida [label=<dispara_medida (3)<br/><font color="gray30">mede</font>>];
+    proximo_char [label=<proximo_char (7)<br/><font color="gray30">conta_char</font><br/><b>bifurcação</b>>, fillcolor="#fef3c7", color="#b45309"];
+  }
+  subgraph cluster_modo0 {
+    label=<<b>Modo 0: localização</b>>; labelloc=b; style="rounded,filled";
+    fillcolor="#dbeafe"; color="#1d4ed8"; fontcolor="#1d4ed8"; fontsize=14;
+    muda_posicao [label=<muda_posicao (8)<br/><font color="gray30">conta_posicao</font>>];
+    final_posicao [label=<final_posicao (F)<br/><font color="gray30">fim_posicao</font>>];
+  }
+  subgraph cluster_modo1 {
+    label=<<b>Modo 1: atenção</b>>; labelloc=b; style="rounded,filled";
+    fillcolor="#ffedd5"; color="#c2410c"; fontcolor="#c2410c"; fontsize=14;
+    final_atencao [label=<final_atencao (A)<br/><font color="gray30">fim_posicao</font><br/><font point-size="11">servo parado</font>>];
+  }
+
+  reset_e -> inicial [label="reset"];
+  { rank=same; espera_medida; envia_char; }
+  { rank=same; timeout_medida; espera_tx; }
+  inicial -> preparacao [label="ligar"];
+  preparacao -> espera [];
+  espera -> espera [label="!fim_espera", tailport=w, headport=w];
+  espera -> dispara_medida [label="fim_espera"];
+  dispara_medida -> espera_medida [];
+  espera_medida -> espera_medida [label="!fim_medida &\n!fim_timeout", tailport=w, headport=w];
+  espera_medida -> timeout_medida [label="!fim_medida &\nfim_timeout"];
+  espera_medida -> envia_char [label="fim_medida"];
+  timeout_medida -> envia_char [];
+  envia_char -> espera_tx [];
+  espera_tx -> espera_tx [label="!fim_transmissao"];
+  espera_tx -> proximo_char [label="fim_transmissao"];
+  proximo_char -> envia_char [label="!fim_char"];
+  proximo_char -> muda_posicao [label="fim_char &\nMatual = LOCALIZACAO", color="#1d4ed8", fontcolor="#1d4ed8", penwidth=1.6];
+  proximo_char -> final_atencao [label="fim_char &\nMatual = ATENCAO", color="#c2410c", fontcolor="#c2410c", penwidth=1.6];
+  muda_posicao -> final_posicao [color="#1d4ed8", fontcolor="#1d4ed8"];
+  final_posicao -> espera [color="#1d4ed8", fontcolor="#1d4ed8", constraint=false];
+  final_atencao -> espera [color="#c2410c", fontcolor="#c2410c", constraint=false];
+}

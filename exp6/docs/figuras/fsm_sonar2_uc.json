@@ -1,0 +1,423 @@
+{
+  "schema": 1,
+  "top": "sonar2_uc",
+  "sources": [
+    "/home/zocal/projetos/labdig2/exp6/rtl/interface_hcsr04_fd.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/contador_m.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/sonar2.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_7E1.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/contador_cm.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/contador_bcd_3digitos.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/hexa7seg.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/deslocador_n.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_7E1_fd.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/registrador_n.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/contador_cm_fd.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/tx_serial_uc.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/gerador_pulso.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/contador_cm_uc.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/sonar2_uc.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/rom_angulos_8x24.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/mux_8x1_n.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/tx_serial_7E1.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/interface_hcsr04_uc.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/circuito_pwm.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/controle_servo_8.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/interface_hcsr04.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/sonar2_fd.v",
+    "/home/zocal/projetos/labdig2/exp6/rtl/tx_serial_7E1_fd.v"
+  ],
+  "yosys": "Yosys 0.66 (git sha1 86f2ddebc-dirty, g++ 16.1.1 -march=x86-64 -mtune=generic -O2 -fno-plt -fexceptions -fstack-clash-protection -fcf-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -ffile-prefix-map=/build/yosys/src=/usr/src/debug/yosys -fPIC -O3) [startdir/yosys at makepkg]",
+  "fsms": [
+    {
+      "register": "Eatual",
+      "inputs": [
+        "ligar",
+        "fim_espera",
+        "fim_medida",
+        "fim_timeout",
+        "fim_transmissao",
+        "fim_char",
+        "db_modo",
+        "net_28"
+      ],
+      "states": [
+        {
+          "id": 0,
+          "code": "0000",
+          "name": "LOCALIZACAO / inicial",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0000"
+          }
+        },
+        {
+          "id": 1,
+          "code": "1000",
+          "name": "muda_posicao",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "1",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "1000"
+          }
+        },
+        {
+          "id": 2,
+          "code": "0100",
+          "name": "espera_medida",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "1",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0100"
+          }
+        },
+        {
+          "id": 3,
+          "code": "0010",
+          "name": "espera",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "1",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0010"
+          }
+        },
+        {
+          "id": 4,
+          "code": "1010",
+          "name": "final_atencao",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "1010"
+          }
+        },
+        {
+          "id": 5,
+          "code": "0110",
+          "name": "espera_tx",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0110"
+          }
+        },
+        {
+          "id": 6,
+          "code": "0001",
+          "name": "ATENCAO / preparacao",
+          "outputs": {
+            "zera": "1",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0001"
+          }
+        },
+        {
+          "id": 7,
+          "code": "1001",
+          "name": "timeout_medida",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "1",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "1001"
+          }
+        },
+        {
+          "id": 8,
+          "code": "0101",
+          "name": "envia_char",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "1",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0101"
+          }
+        },
+        {
+          "id": 9,
+          "code": "0011",
+          "name": "dispara_medida",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "1",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0011"
+          }
+        },
+        {
+          "id": 10,
+          "code": "0111",
+          "name": "proximo_char",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "1",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "0111"
+          }
+        },
+        {
+          "id": 11,
+          "code": "1111",
+          "name": "final_posicao",
+          "outputs": {
+            "zera": "0",
+            "conta_espera": "0",
+            "mede": "0",
+            "conta_timeout": "0",
+            "limpa_sensor": "0",
+            "transmite": "0",
+            "conta_char": "0",
+            "conta_posicao": "0",
+            "fim_posicao": "?",
+            "db_modo": "?",
+            "db_estado": "1111"
+          }
+        }
+      ],
+      "reset": 0,
+      "transitions": [
+        {
+          "from": 0,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 0,
+          "to": 6,
+          "pattern": "-------1"
+        },
+        {
+          "from": 1,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 1,
+          "to": 11,
+          "pattern": "-------1"
+        },
+        {
+          "from": 2,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 2,
+          "to": 2,
+          "pattern": "----00-1"
+        },
+        {
+          "from": 2,
+          "to": 7,
+          "pattern": "----10-1"
+        },
+        {
+          "from": 2,
+          "to": 8,
+          "pattern": "-----1-1"
+        },
+        {
+          "from": 3,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 3,
+          "to": 3,
+          "pattern": "------01"
+        },
+        {
+          "from": 3,
+          "to": 9,
+          "pattern": "------11"
+        },
+        {
+          "from": 4,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 4,
+          "to": 3,
+          "pattern": "-------1"
+        },
+        {
+          "from": 5,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 5,
+          "to": 5,
+          "pattern": "---0---1"
+        },
+        {
+          "from": 5,
+          "to": 10,
+          "pattern": "---1---1"
+        },
+        {
+          "from": 6,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 6,
+          "to": 3,
+          "pattern": "-------1"
+        },
+        {
+          "from": 7,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 7,
+          "to": 8,
+          "pattern": "-------1"
+        },
+        {
+          "from": 8,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 8,
+          "to": 5,
+          "pattern": "-------1"
+        },
+        {
+          "from": 9,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 9,
+          "to": 2,
+          "pattern": "-------1"
+        },
+        {
+          "from": 10,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 10,
+          "to": 8,
+          "pattern": "--0----1"
+        },
+        {
+          "from": 10,
+          "to": 1,
+          "pattern": "-01----1"
+        },
+        {
+          "from": 10,
+          "to": 4,
+          "pattern": "-11----1"
+        },
+        {
+          "from": 11,
+          "to": 0,
+          "pattern": "-------0"
+        },
+        {
+          "from": 11,
+          "to": 3,
+          "pattern": "-------1"
+        }
+      ],
+      "module": "sonar2_uc",
+      "instances": [
+        "sonar2_uc"
+      ]
+    }
+  ],
+  "warnings": []
+}

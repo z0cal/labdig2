@@ -1,0 +1,26 @@
+digraph FSM {
+  rankdir=LR;
+  graph [fontname="sans", fontsize=12];
+  node [shape=ellipse, fontname="sans", fontsize=11];
+  edge [fontname="sans", fontsize=9];
+  subgraph cluster_0 {
+    label="rx_serial_uc (Eatual): saídas listadas nos estados; as omitidas valem zero"; labelloc=b;
+    f0s0 [label="inicial\n0000\nzera=1"];
+    f0s1 [label="preparacao\n0010\nzera_tick=1\ncarrega=1\ndb_estado=2"];
+    f0s2 [label="registrar\n1001\nregistra=1\ndb_estado=9"];
+    f0s3 [label="espera\n0011\ndb_estado=3"];
+    f0s4 [label="recepcao\n0111\nconta=1\ndesloca=1\ndb_estado=7"];
+    f0s5 [label="final_rx\n1111\npronto=1\ndb_estado=15"];
+    start0 [shape=point, width=0.1];
+    start0 -> f0s0 [label="reset"];
+    f0s0 -> f0s0 [label="RX"];
+    f0s0 -> f0s1 [label="!RX"];
+    f0s1 -> f0s3 [label="1"];
+    f0s2 -> f0s5 [label="1"];
+    f0s3 -> f0s2 [label="!tick & fim"];
+    f0s3 -> f0s3 [label="!tick & !fim"];
+    f0s3 -> f0s4 [label="tick"];
+    f0s4 -> f0s3 [label="1"];
+    f0s5 -> f0s0 [label="1"];
+  }
+}

@@ -1,0 +1,13 @@
+% Gerado por scripts/anota_ondas.py: forma de onda do ModelSim e anotacoes.
+\begin{tikzpicture}[x=\linewidth/509, y=-\linewidth/509]
+  \node[anchor=north west, inner sep=0] at (0,0)
+    {\includegraphics[width=\linewidth, trim=0 12.7 0 0, clip]{figures/sim/sim_sonar2_comando_v.pdf}};
+  \draw[sa] (128.7,21.1) node[an, right] {start bit} -- (118.7,12.1);
+  \draw[cota] (118.7,22.1) -- node[an, below] {quadro 7E1 de 'v' (10 bits, 86,8 $\mu$s)} (502.4,22.1);
+  \draw[sa] (471.6,52.6) node[an, left] {pronto: 82,6 $\mu$s após o start bit} -- (483.6,59.6);
+  \draw[sa] (467.7,76.4) node[an, left] {'v' (76H)} -- (483.7,83.4);
+  \draw[sa] (471.6,147.7) node[an, left] {recebeu\_voltar: 1 ciclo} -- (483.6,154.7);
+  \draw[sa] (471.7,171.4) node[an, left] {ATENCAO $\rightarrow$ LOCALIZACAO} -- (483.7,178.4);
+  \draw[sa] (471.6,100.1) node[an, left] {paridade\_ok volta a 1 (o último quadro, 'v' do CT6, tinha paridade errada)} -- (483.6,107.1);
+  \node[an, anchor=center] at (301.1,193.2) {a UC de sequência continua em espera};
+\end{tikzpicture}

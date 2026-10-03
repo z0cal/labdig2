@@ -1,0 +1,213 @@
+
+-- Executing script file `/tmp/fsm-diagrama-bpzd5z39/run.ys' --
+
+1. Executing Verilog-2005 frontend: /home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v
+Parsing SystemVerilog input from `/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v' to AST representation.
+Storing AST representation for module `$abstract\rx_serial_uc'.
+Successfully finished Verilog frontend.
+
+2. Executing HIERARCHY pass (managing design hierarchy).
+
+3. Executing AST frontend in derive mode using pre-parsed AST for module `\rx_serial_uc'.
+Generating RTLIL representation for module `\rx_serial_uc'.
+
+3.1. Analyzing design hierarchy..
+Top module:  \rx_serial_uc
+
+3.2. Analyzing design hierarchy..
+Top module:  \rx_serial_uc
+Removing unused module `$abstract\rx_serial_uc'.
+Removed 1 unused modules.
+
+4. Executing PROC pass (convert processes to netlists).
+
+4.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+4.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6 in module rx_serial_uc.
+Marked 1 switch rules as full_case in process $proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:51$2 in module rx_serial_uc.
+Marked 1 switch rules as full_case in process $proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:43$1 in module rx_serial_uc.
+Removed a total of 0 dead cases.
+
+4.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 1 redundant assignment.
+Promoted 9 assignments to connections.
+
+4.4. Executing PROC_INIT pass (extract init attributes).
+
+4.5. Executing PROC_ARST pass (detect async resets in processes).
+Found async reset \reset in `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:43$1'.
+
+4.6. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+     1/1: $1\db_estado[3:0]
+Creating decoders for process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:51$2'.
+     1/1: $1\Eprox[3:0]
+Creating decoders for process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:43$1'.
+     1/1: $0\Eatual[3:0]
+
+4.7. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\rx_serial_uc.\registra' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\zera' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\zera_tick' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\conta' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\carrega' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\desloca' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\pronto' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\db_estado' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+No latch inferred for signal `\rx_serial_uc.\Eprox' from process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:51$2'.
+
+4.8. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\rx_serial_uc.\Eatual' using process `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:43$1'.
+  created $adff cell `$procdff$39' with positive edge clock and positive level reset.
+
+4.9. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+4.10. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 1 empty switch in `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+Removing empty process `rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:64$6'.
+Found and cleaned up 1 empty switch in `\rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:51$2'.
+Removing empty process `rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:51$2'.
+Removing empty process `rx_serial_uc.$proc$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:43$1'.
+Cleaned up 2 empty switches.
+
+4.11. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rx_serial_uc.
+<suppressed ~4 debug messages>
+
+5. Executing OPT pass (performing simple optimizations).
+
+5.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rx_serial_uc.
+
+5.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rx_serial_uc'.
+Computing hashes of 31 cells of `\rx_serial_uc'.
+Finding duplicate cells in `\rx_serial_uc'.
+Computing hashes of 19 cells of `\rx_serial_uc'.
+Finding duplicate cells in `\rx_serial_uc'.
+<suppressed ~36 debug messages>
+Removed a total of 12 cells.
+
+5.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rx_serial_uc..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~21 debug messages>
+
+5.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rx_serial_uc.
+    New ctrl vector for $pmux cell $procmux$31: { $procmux$32_CMP $auto$opt_reduce.cc:135:opt_pmux$41 $procmux$34_CMP $procmux$36_CMP }
+  Optimizing cells in module \rx_serial_uc.
+Performed a total of 1 changes.
+
+5.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rx_serial_uc'.
+Computing hashes of 20 cells of `\rx_serial_uc'.
+Finding duplicate cells in `\rx_serial_uc'.
+Computing hashes of 18 cells of `\rx_serial_uc'.
+Finding duplicate cells in `\rx_serial_uc'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+5.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rx_serial_uc..
+Removed 0 unused cells and 34 unused wires.
+<suppressed ~1 debug messages>
+
+5.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rx_serial_uc.
+
+5.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+5.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \rx_serial_uc..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~17 debug messages>
+
+5.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \rx_serial_uc.
+Performed a total of 0 changes.
+
+5.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\rx_serial_uc'.
+Computing hashes of 18 cells of `\rx_serial_uc'.
+Finding duplicate cells in `\rx_serial_uc'.
+Removed a total of 0 cells.
+
+5.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+5.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rx_serial_uc..
+
+5.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module rx_serial_uc.
+
+5.16. Finished fast OPT passes. (There is nothing left to do.)
+
+6. Executing WREDUCE pass (reducing word size of cells).
+Removed top 2 bits (of 4) from mux cell rx_serial_uc.$ternary$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:53$3 ($mux).
+Removed top 1 bits (of 4) from port B of cell rx_serial_uc.$procmux$33_CMP0 ($eq).
+Removed top 2 bits (of 4) from port B of cell rx_serial_uc.$procmux$34_CMP0 ($eq).
+Removed top 2 bits (of 4) from port B of cell rx_serial_uc.$procmux$35_CMP0 ($eq).
+Removed top 2 bits (of 4) from wire rx_serial_uc.$ternary$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:53$3_Y.
+
+7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \rx_serial_uc..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+8. Executing JSON backend.
+
+-- Executing script file `/tmp/fsm-diagrama-bpzd5z39/run.ys' --
+
+1. Executing JSON frontend.
+Importing module rx_serial_uc from JSON tree.
+
+2. Executing FSM_DETECT pass (finding FSMs in design).
+FSM state register rx_serial_uc.Eatual already has fsm_encoding attribute.
+
+3. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\Eatual' from module `\rx_serial_uc'.
+  found $adff cell for state register: $procdff$39
+  root of input selection tree: \Eprox
+  found reset state: 4'0000 (from async reset)
+  found ctrl input: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:65$7_Y
+  found ctrl input: $procmux$26_CMP
+  found ctrl input: $auto$opt_reduce.cc:135:opt_pmux$41
+  found ctrl input: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:66$9_Y
+  found ctrl input: \RX
+  found state code: 4'0010
+  found ctrl input: \tick
+  found ctrl input: \fim
+  found state code: 4'0011
+  found state code: 4'1001
+  found state code: 4'0111
+  found state code: 4'1111
+  found ctrl output: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:65$7_Y
+  found ctrl output: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:67$11_Y
+  found ctrl output: $procmux$26_CMP
+  found ctrl output: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:68$13_Y
+  found ctrl output: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:66$9_Y
+  found ctrl output: $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:71$19_Y
+  ctrl inputs: { $auto$opt_reduce.cc:135:opt_pmux$41 \fim \tick \RX }
+  ctrl outputs: { $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:65$7_Y $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:66$9_Y $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:67$11_Y $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:68$13_Y $eq$/home/zocal/projetos/labdig2/exp6/rtl/rx_serial_uc.v:71$19_Y $procmux$26_CMP \Eprox }
+  transition:     4'0000 4'---0 ->     4'0010 10'1000000010
+  transition:     4'0000 4'---1 ->     4'0000 10'1000000000
+  transition:     4'0010 4'---- ->     4'0011 10'0010000011
+  transition:     4'1001 4'---- ->     4'1111 10'0100001111
+  transition:     4'0011 4'-00- ->     4'0011 10'0000010011
+  transition:     4'0011 4'-10- ->     4'1001 10'0000011001
+  transition:     4'0011 4'--1- ->     4'0111 10'0000010111
+  transition:     4'0111 4'---- ->     4'0011 10'0001000011
+  transition:     4'1111 4'---- ->     4'0000 10'0000100000
+
+4. Executing JSON backend.
