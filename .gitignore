@@ -22,7 +22,7 @@ files.f
 # arquivo compactado do projeto e sua extracao.
 # Excecao: o .qar da entrega (exp<N>_T<turma>B<bancada>.qar) E versionado,
 # para o grupo baixar direto do repo. Ver README.
-*.qar
+.qar
 !exp*_T*B*.qar
 *.qarlog
 *_restored/
