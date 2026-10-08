@@ -17,6 +17,7 @@
 %%EndFeature
 %%EndSetup
 %%Page: 1 1
+gsave 0 0 0 setrgbcolor newpath 14.7420 15.4980 moveto 528.0186 15.4980 lineto 528.0186 221.8600 lineto 14.7420 221.8600 lineto closepath fill grestore % colore_ondas
 gsave
 0 226.08000000000001 translate 0.12 dup neg scale
 % dump string table
@@ -39,7 +40,23 @@ gsave
 (conta_posicao) MLW
 (posicao) MLW
 (fim_posicao) MLW
+% colore_ondas: tema escuro % colore_ondas
+/CorOnda {0.00 1.00 0.00 setrgbcolor} def % colore_ondas
+/CorBus {0.00 1.00 0.00 setrgbcolor} def % colore_ondas
+/CorValor {1.00 1.00 1.00 setrgbcolor} def % colore_ondas
+/CorNome {0.85 0.85 0.85 setrgbcolor} def % colore_ondas
+/CorTique {0.30 0.30 0.30 setrgbcolor} def % colore_ondas
+/CorX {0.60 0.00 0.00 setrgbcolor} def % colore_ondas
+/CorGrade {0.28 0.28 0.28 setrgbcolor} def % colore_ondas
+/CorRegua {0.90 0.90 0.90 setrgbcolor} def % colore_ondas
+/Modo 0 def % colore_ondas
+/LarguraOnda 5 def % colore_ondas
+/LS {SX lineto Modo 1 eq {currentlinecap 1 eq {CorOnda LarguraOnda} {CorTique 3} ifelse setlinewidth} if stroke} def % colore_ondas
+/ST {Modo 1 eq {CorBus LarguraOnda setlinewidth} if stroke} def % colore_ondas
+/LFS {SX lineto Modo 1 eq {CorX} if fill stroke} def % colore_ondas
+/RSS {Modo 1 eq {currentpoint pop MaxLabelWidth LMargin add 10 add lt {CorNome} {CorValor} ifelse} if rmoveto show stroke} def % colore_ondas
 % draw waveform shading
+/Modo 1 def % colore_ondas
 0 0 0 CL
 (espera_tx) 522 LC 858 215 WT pop 0 originOffset 50 add RSS
 [] 0 SD
@@ -86,6 +103,7 @@ gsave
 3194 1260 MT 4378 1260 LS
 4378 1260 MT 4378 1260 LS
 % draw timeline
+/Modo 0 def CorRegua 3 setlinewidth % colore_ondas
 0 setlinecap
 830 1419 MT 830 1456 LS
 829 1438 MT 831 1438 LS
@@ -125,6 +143,7 @@ gsave
 4437 1419 MT 4437 1456 LS
 4555 1419 MT 4555 1456 LS
 % draw grid
+/Modo 0 def CorGrade 3 setlinewidth % colore_ondas
 1119 120 MT 1119 1392 LS
 1415 120 MT 1415 1392 LS
 1711 120 MT 1711 1392 LS
@@ -138,6 +157,7 @@ gsave
 4081 120 MT 4081 1392 LS
 4378 120 MT 4378 1392 LS
 % draw waveforms
+/Modo 1 def % colore_ondas
 (estado) 9999 LC 786 269 WT TSE RSS
 1112 120 MT 1126 120 LS
 1408 120 MT 1422 120 LS
@@ -265,6 +285,7 @@ gsave
 3194 1260 MT 4378 1260 LS
 4378 1260 MT 4378 1260 LS
 % draw footer
+/Modo 0 def CorRegua 3 setlinewidth % colore_ondas
 (Entity:sonar2_tb  Architecture:fast  Date: Sat Oct 03 12:27:34 -03 2026   Row: 1 Page: 1) 9999 LC 120 1763 WT TSW RSS
 grestore
 showpage

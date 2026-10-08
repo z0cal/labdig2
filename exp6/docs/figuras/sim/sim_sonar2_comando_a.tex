@@ -2,11 +2,11 @@
 \begin{tikzpicture}[x=\linewidth/507, y=-\linewidth/507]
   \node[anchor=north west, inner sep=0] at (0,0)
     {\includegraphics[width=\linewidth, trim=0 12.7 0 0, clip]{figures/sim/sim_sonar2_comando_a.pdf}};
-  \draw[sa] (128.5,21.1) node[an, right] {start bit} -- (118.5,12.1);
-  \draw[cota] (118.5,22.1) -- node[an, below] {quadro 7E1 de 'a' (10 bits, 86,8 $\mu$s)} (502.5,22.1);
-  \draw[sa] (471.7,52.6) node[an, left] {pronto: 82,6 $\mu$s após o start bit} -- (483.7,59.6);
-  \draw[sa] (467.8,76.4) node[an, left] {'a' (61H)} -- (483.8,83.4);
-  \draw[sa] (471.7,123.9) node[an, left] {recebeu\_atencao: 1 ciclo} -- (483.7,130.9);
-  \draw[sa] (471.8,171.4) node[an, left] {LOCALIZACAO $\rightarrow$ ATENCAO} -- (483.8,178.4);
-  \node[an, anchor=center] at (301.1,193.2) {a UC de sequência continua em espera};
+  \draw[sa] (128.5,31.1) node[an, right] {start bit} -- (118.5,22.1);
+  \draw[cota] (118.5,32.1) -- node[an, below] {quadro 7E1 de \textquotesingle{}a\textquotesingle{} (10 bits, 86,8 \textmu{}s)} (502.5,32.1);
+  \draw[sa] (471.7,62.6) node[an, left] {pronto: 82,6 \textmu{}s após o start bit} -- (483.7,69.6);
+  \draw[sa] (467.8,86.4) node[an, left] {\textquotesingle{}a\textquotesingle{} (61H)} -- (483.8,93.4);
+  \draw[sa] (471.7,133.9) node[an, left] {recebeu\_atencao: 1 ciclo} -- (483.7,140.9);
+  \draw[sa] (471.8,181.4) node[an, left] {LOCALIZACAO $\rightarrow$ ATENCAO} -- (483.8,188.4);
+  \node[an, anchor=center] at (301.1,203.2) {a UC de sequência continua em espera};
 \end{tikzpicture}

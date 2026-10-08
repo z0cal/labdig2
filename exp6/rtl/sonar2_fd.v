@@ -19,11 +19,16 @@
  *              U8  contador_m        espera de 2s entre medidas
  *              U9  contador_m        timeout da medida (10s)
  *              U10 rx_serial_7E1     recepcao dos comandos         (exp6)
+ *
+ *              Os contadores de tempo (U8, U9) calculam o numero de bits a
+ *              partir do modulo ($clog2): qualquer ESPERA ou TIMEOUT cabe.
+ *              Pontos de mudanca: EXTENSAO.
  * --------------------------------------------------------------------------
  *  Revisoes  :
  *      Data        Versao  Autor   Descricao
  *      27/09/2026  1.0     T1BA5   sonar_fd da exp5
  *      03/10/2026  2.0     T1BA5   recepcao de comandos e depuracao
+ *      08/10/2026  3.0     T1BA5   largura dos contadores pelo modulo
  * --------------------------------------------------------------------------
  */
 
@@ -32,6 +37,7 @@ module sonar2_fd #(
     parameter       TIMEOUT      = 500_000_000, // 10s sem resposta do sensor
     parameter [7:0] CHAR_ATENCAO = "a",         // comando que entra no modo atencao
     parameter [7:0] CHAR_VOLTAR  = "v"          // comando que volta ao modo normal
+    // EXTENSAO: parametro novo (ex.: , parameter [7:0] CHAR_DUPLO = "d")
 ) (
     input  wire        clock,
     input  wire        reset,
@@ -44,7 +50,8 @@ module sonar2_fd #(
     input  wire        transmite,
     input  wire        conta_char,
     input  wire        conta_posicao,
-    // entradas externas
+    // EXTENSAO: sinal de controle novo vindo da UC
+    // entradas externas (ja sincronizadas no topo)
     input  wire        echo,
     input  wire        entrada_serial,
     // saidas externas
@@ -59,7 +66,8 @@ module sonar2_fd #(
     output wire        fim_char,
     output wire        recebeu_atencao, // pulso: chegou CHAR_ATENCAO valido
     output wire        recebeu_voltar,  // pulso: chegou CHAR_VOLTAR valido
-    // depuracao
+    // EXTENSAO: pulso de comando novo (ex.: output wire recebeu_duplo,)
+    // depuracao (EXTENSAO: sinal interno para os displays = saida db_...)
     output wire [11:0] db_medida,       // distancia em BCD (3 digitos)
     output wire [11:0] db_angulo,       // angulo em BCD (3 digitos)
     output wire [2:0]  db_posicao,      // posicao do servo
@@ -118,7 +126,9 @@ module sonar2_fd #(
         .db_controle(         )
     );
 
-    // Posicao do servo: so muda com conta_posicao (estado muda_posicao)
+    // Posicao do servo: so muda com conta_posicao (estado muda_posicao).
+    // EXTENSAO: outro movimento (vai-e-volta, pula 2) muda so este bloco
+    // e a regra posicao_seguinte do testbench (sonar2_tb_config.vh).
     contador_m #(
         .M(8),
         .N(3)
@@ -183,10 +193,16 @@ module sonar2_fd #(
     // ==================================================================
     // Temporizadores
     // ==================================================================
+    // N = $clog2(M): bits suficientes para contar de 0 a M-1. Com N fixo, um
+    // M maior que 2^N nunca chega ao fim (fim nao sobe e a UC trava), e a
+    // simulacao, com M reduzido, nao mostra o problema.
+    // EXTENSAO: tempo novo (ex.: espera de 1s no modo atencao) = copia do U8
+    // com o parametro novo e um conta_* proprio vindo da UC.
+
     // Espera de 2s entre medidas
     contador_m #(
         .M(ESPERA),
-        .N(27)
+        .N($clog2(ESPERA))
     ) U8_ESPERA (
         .clock  (clock       ),
         .zera_as(reset       ),
@@ -200,7 +216,7 @@ module sonar2_fd #(
     // Timeout da medida: recomeca a cada disparo (mede), conta em espera_medida
     contador_m #(
         .M(TIMEOUT),
-        .N(29)
+        .N($clog2(TIMEOUT))
     ) U9_TIMEOUT (
         .clock  (clock        ),
         .zera_as(reset        ),
@@ -235,6 +251,8 @@ module sonar2_fd #(
     assign s_rx_valido     = s_rx_pronto & s_rx_paridade_ok;
     assign recebeu_atencao = s_rx_valido & (s_rx_dado == CHAR_ATENCAO[6:0]);
     assign recebeu_voltar  = s_rx_valido & (s_rx_dado == CHAR_VOLTAR[6:0]);
+    // EXTENSAO: comando novo = um comparador igual, por exemplo
+    //   assign recebeu_duplo = s_rx_valido & (s_rx_dado == CHAR_DUPLO[6:0]);
 
     // ==================================================================
     // Depuracao
@@ -246,5 +264,6 @@ module sonar2_fd #(
     assign db_dado_tx     = s_dado_tx;
     assign db_dado_rx     = s_rx_dado;
     assign db_paridade_ok = s_rx_paridade_ok;
+    // EXTENSAO: sinal interno novo para os displays (porta db_... acima)
 
 endmodule

@@ -28,6 +28,7 @@ set_global_assignment -name VERILOG_FILE ../../rtl/rom_angulos_8x24.v
 set_global_assignment -name VERILOG_FILE ../../rtl/rx_serial_7E1_fd.v
 set_global_assignment -name VERILOG_FILE ../../rtl/rx_serial_7E1.v
 set_global_assignment -name VERILOG_FILE ../../rtl/rx_serial_uc.v
+set_global_assignment -name VERILOG_FILE ../../rtl/sincronizador.v
 set_global_assignment -name VERILOG_FILE ../../rtl/sonar2_fd.v
 set_global_assignment -name VERILOG_FILE ../../rtl/sonar2_uc.v
 set_global_assignment -name VERILOG_FILE ../../rtl/sonar2.v
@@ -176,7 +177,7 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex5[5]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to hex5[6]
 
 
-set_global_assignment -name LAST_QUARTUS_VERSION "20.1.1 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "25.1std.0 Lite Edition"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top

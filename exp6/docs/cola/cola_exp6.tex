@@ -1,0 +1,697 @@
+% Cola de depuracao do sonar modificado (exp6) para consulta rapida na prova.
+% Compilar: latexmk -lualatex cola_exp6.tex
+\documentclass[9pt,a4paper]{extarticle}
+
+\usepackage{fontspec}
+\usepackage[brazilian]{babel}
+\usepackage[a4paper,margin=11mm,top=10mm,bottom=12mm]{geometry}
+\usepackage{tabularx,booktabs,array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,arrows.meta}
+
+\setmainfont{TeX Gyre Heros}
+\setmonofont{DejaVu Sans Mono}[Scale=0.88]
+
+\titleformat{\section}{\normalsize\bfseries\color{blue!55!black}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{7pt}{3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setlist{nosep,leftmargin=12pt}
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{4pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\s}[1]{\texttt{#1}}          % sinal / codigo
+\newcommand{\bancada}{\textcolor{red!70!black}{\textbf{(06/10)}}}
+\pagestyle{plain}
+
+\begin{document}
+
+{\large\bfseries Cola de depuração --- Sonar exp6 (PCS3645)}\hfill
+{\small T1BA5 · top \s{sonar2} · 08/10/2026}
+
+% ==========================================================================
+\section{Guia de montagem (DE0-CV)}
+
+Placa desligada até o passo 6. É a montagem da exp5 mais o TXD do CP2102.
+Conferir o pino 1 de cada conector pela marcação da placa.
+
+\begin{center}
+\begin{tikzpicture}[
+    pin/.style={circle, draw=black!35, fill=white, inner sep=0pt, minimum size=2.3mm},
+    pwr/.style={pin, draw=red!60!black, fill=red!55},
+    gnd/.style={pin, draw=black, fill=black!75},
+    sig/.style={pin, draw=blue!60!black, fill=blue!45},
+    tag/.style={font=\footnotesize, inner sep=1pt},
+    num/.style={font=\tiny, text=black!55},
+    ld/.style={draw=black!55}
+  ]
+  \def\sp{0.36}
+  % \conector{nome}{x}{rotulo}: 20 linhas de 2 pinos (impares a esquerda)
+  \newcommand{\conector}[3]{
+    \draw[rounded corners=1pt, draw=black!35, fill=black!4]
+      (#2-0.2, 0.2) rectangle (#2+0.62, -19*\sp-0.2);
+    \foreach \l in {0,...,19} {
+      \pgfmathtruncatemacro{\pinimpar}{2*\l+1}
+      \pgfmathtruncatemacro{\pinpar}{2*\l+2}
+      \node[pin] (#1-\pinimpar) at (#2, -\l*\sp) {};
+      \node[pin] (#1-\pinpar)   at (#2+0.42, -\l*\sp) {};
+    }
+    \node[font=\footnotesize\bfseries, anchor=south] at (#2+0.21, 0.25) {#3};
+  }
+  % rotulos: \esq{pino}{texto} a esquerda (impares), \dir{pino}{texto} a direita (pares)
+  \newcommand{\esq}[2]{\draw[ld] (#1.west) -- ++(-0.3,0) node[tag, anchor=east] {#2};}
+  \newcommand{\dir}[2]{\draw[ld] (#1.east) -- ++(0.3,0) node[tag, anchor=west] {#2};}
+
+  % JP1 = GPIO_0: serial e servo
+  \conector{JP1}{5.6}{JP1 · GPIO\_0}
+  \node[gnd] at (JP1-12) {};
+  \node[sig] at (JP1-2) {};  \node[sig] at (JP1-4) {};  \node[sig] at (JP1-40) {};
+  \node[num, anchor=east] at (JP1-1.west) {1};
+  \node[num, anchor=east] at (JP1-39.west) {39};
+  \esq{JP1-11}{11 · 5\,V da placa: \textbf{não usar} (servo na fonte externa)}
+  \dir{JP1-2}{2 · \s{saida\_serial} $\to$ RXD do CP2102}
+  \dir{JP1-4}{4 · \s{entrada\_serial} $\leftarrow$ TXD do CP2102}
+  \dir{JP1-12}{12 · GND: $-$ da fonte do servo, servo (marrom), CP2102}
+  \dir{JP1-40}{40 · \s{pwm} $\to$ sinal do servo (laranja)}
+
+  % JP2 = GPIO_1: sensor e fim_posicao
+  \conector{JP2}{13.4}{JP2 · GPIO\_1}
+  \node[pwr] at (JP2-29) {};  \node[gnd] at (JP2-30) {};
+  \node[sig] at (JP2-2) {};  \node[sig] at (JP2-4) {};  \node[sig] at (JP2-40) {};
+  \node[num, anchor=east] at (JP2-1.west) {1};
+  \node[num, anchor=east] at (JP2-39.west) {39};
+  \esq{JP2-29}{29 · 3,3\,V $\to$ VCC do HC-SR04 (\textbf{nunca 5\,V})}
+  \dir{JP2-2}{2 · \s{trigger} $\to$ TRIG}
+  \dir{JP2-4}{4 · \s{echo} $\leftarrow$ ECHO}
+  \dir{JP2-30}{30 · GND: HC-SR04, AD}
+  \dir{JP2-40}{40 · \s{fim\_posicao} (só DIO1)}
+\end{tikzpicture}
+\end{center}
+
+\textcolor{red!60!black}{$\bullet$} alimentação ·
+$\bullet$ GND (todos ligados entre si) ·
+\textcolor{blue!60!black}{$\bullet$} sinal · $\circ$ não ligar.
+Ímpares à esquerda, pares à direita; sinais só na coluna par (2, 4, 40). A placa só alimenta o sensor (3,3\,V,
+pino 29, vizinho do GND 30: um fio deslocado dá curto). O servo usa a fonte
+de 5\,V externa ($+$ no VCC do servo, vermelho; $-$ no GND comum, junto com o
+marrom do servo); o 5\,V da placa (pino 11) fica livre.
+
+\textbf{Analog Discovery:} cada fio do AD entra no mesmo ponto do sinal, em
+paralelo (coluna da protoboard ou pino livre), sem tirar o fio que já está lá.
+
+\begin{tabularx}{\linewidth}{@{}l l Y l l@{}}
+\toprule
+Fio do AD & Cor* & Prender em & Sinal (pino FPGA) & Ver com \\
+\midrule
+1$+$  & laranja        & sinal do servo (JP1 · 40)           & \s{pwm} (T15)            & Scope CH1 \\
+2$+$  & azul           & TRIG do HC-SR04 (JP2 · 2)           & \s{trigger} (A12)        & Scope CH2 \\
+DIO0  & rosa           & ECHO do HC-SR04 (JP2 · 4)           & \s{echo} (B12)           & Logic \\
+DIO1  & rosa           & direto no pino JP2 · 40 (não vai em mais nada) & \s{fim\_posicao} (K16) & Logic \\
+DIO6  & rosa           & TXD do CP2102 (JP1 · 4)             & \s{entrada\_serial} (C16) & Logic / Protocol UART \\
+DIO7  & rosa           & RXD do CP2102 (JP1 · 2)             & \s{saida\_serial} (B16)  & Logic / Protocol UART \\
+1$-$, 2$-$ & laranja/branco, azul/branco & GND comum      & referência dos canais     & --- \\
+GND   & preto          & GND comum (JP2 · 30)                & referência do AD          & --- \\
+\bottomrule
+\end{tabularx}
+
+{\footnotesize * Cores do cabo do Analog Discovery 2; conferir pelo rótulo do
+conector do cabo. Configurações de cada instrumento na seção Analog Discovery.}
+
+\begin{minipage}[t]{0.49\linewidth}
+\vspace{0pt}
+\textbf{Montagem e energização}
+\begin{enumerate}
+  \item \textbf{GND primeiro:} GND da placa (pinos 12 e 30) no GND do sensor,
+        do CP2102, do AD e no $-$ da fonte externa do servo.
+  \item \textbf{Alimentação:} HC-SR04 em 3,3\,V (JP2 · 29); em 5\,V o echo
+        chega a 5\,V na FPGA. Servo na fonte externa de 5\,V ($+$ no
+        vermelho, $-$ no marrom); nunca pelo 5\,V da placa nem por pino de E/S.
+  \item \textbf{Sinais:} conforme o diagrama. TXD e RXD cruzados; fios do AD (tabela)
+        em paralelo, sem interromper o fio.
+  \item \textbf{Mecânica:} sensor sobre o eixo do servo, girando livre de
+        20° a 160° sem puxar cabos; 90° apontando para a frente.
+  \item \textbf{Multímetro, placa desligada:} sem curto entre 3,3\,V e GND, nem entre $+$ e $-$ da fonte.
+  \item \textbf{Energizar} a placa com SW0 = 0, SW1 = 0 e SW9..7 = 000; depois a
+        fonte (5\,V). Medir 3,3\,V no VCC do sensor e 5\,V no VCC do servo.
+  \item \textbf{Programar:} \s{make jtag} (USB-Blaster na lista) e
+        \s{make program}.
+  \item \textbf{CP2102 no USB:} \s{ls /dev/ttyUSB*}; Processing ou
+        \s{picocom}, um de cada vez.
+\end{enumerate}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\linewidth}
+\vspace{0pt}
+\textbf{Primeiro teste} (só avançar se a linha anterior passou)\\[2pt]
+\begin{tabularx}{\linewidth}{@{}l >{\raggedright\arraybackslash}p{0.34\linewidth} Y@{}}
+\toprule
+& Como & Esperado \\
+\midrule
+EU1 & CP2102 sem FPGA, TXD ligado ao RXD; \s{picocom} & cada tecla volta na tela \\
+--- & programado, SW1 = 0 & HEX5 = 0; LEDR4 e LEDR5 acesos (linhas em repouso) \\
+EU2 & SW1 = 0, página 011; teclar \s{a}, \s{v}, \s{x} & HEX1 HEX0 = 61, 76, 78; paridade ok = 1; LEDR9 apagado \\
+--- & SW1 = 1 & LEDR0 aceso; HEX5 HEX4 = \s{2 0}; servo em 020 \\
+EU3 & Scope CH1 no \s{pwm} & 20\,ms; larguras da tabela do servo \\
+EU4 & objeto a 10 e 30\,cm (régua), página 000 & distância $\pm$2\,cm; trigger de 10\,µs \\
+EI1 & Processing & \s{aaa,ddd\#}; ângulos 020 $\to$ 160 $\to$ 020 \\
+EI2 & teclar \s{a}, depois \s{v} & LEDR9 acende e o servo para no fim do ciclo; \s{v} retoma da posição mantida \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+\clearpage
+% ==========================================================================
+\section{Números-chave}
+
+O ciclo dura cerca de 2\,s: espera, medida, envio de \s{aaa,ddd\#} e, no modo 0,
+avanço do servo. Clock de 50\,MHz (20\,ns).
+
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+Grandeza & Valor & Origem \\
+\midrule
+Espera entre medidas & 2\,s = 100\,000\,000 clocks & \s{ESPERA} em \s{sonar2.v} \\
+Timeout da medida & 10\,s = 500\,000\,000 clocks & \s{TIMEOUT} em \s{sonar2.v} \\
+Pulso de trigger & 10\,µs = 500 clocks & \s{gerador\_pulso} \\
+Echo $\to$ distância & 58,8\,µs por cm = 2941 clocks & \s{contador\_cm} (R = 2941) \\
+Echo máximo real (4\,m) & cerca de 23,5\,ms & HC-SR04 \\
+Sem eco (sensor desiste) & cerca de 47,5\,ms $\to$ lê 807\,cm & medido na bancada \bancada \\
+Serial & 115200 bauds, 7 bits, paridade par, 1 stop (7E1) & TX e RX \\
+Um caractere & 10 bits = 86,8\,µs & start + 7 + paridade + stop \\
+Mensagem \s{aaa,ddd\#} & 8 caracteres, cerca de 700\,µs & ângulo, vírgula, distância, \s{\#} \\
+PWM do servo & período 20\,ms (50\,Hz), pulso 0,7 a 2,2\,ms & \s{controle\_servo\_8} \\
+Sincronizadores (\s{ligar}, \s{echo}, \s{entrada\_serial}) & 2 FFs cada, atraso de 40\,ns & \s{sincronizador.v} no \s{sonar2.v} \\
+Simulação (testbenches) & espera 200\,µs, timeout 20\,ms & \s{sonar2\_tb\_config.vh} \\
+\bottomrule
+\end{tabularx}
+
+Comandos: \s{a} = modo atenção (servo para), \s{v} = volta à varredura. Só
+minúsculos e com paridade correta; o resto é ignorado. Desligado
+(\s{ligar} = 0), os comandos são ignorados.
+
+% ==========================================================================
+\section{Chaves e LEDs}
+
+\begin{minipage}[t]{0.40\linewidth}
+\vspace{0pt}
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+Chave & Sinal & Uso \\
+\midrule
+SW0 & \s{reset} & 1 = reset assíncrono (estado 0, modo 0, posição 000) \\
+SW1 & \s{ligar} & 1 = sonar funcionando; 0 = UC em \s{inicial} \\
+SW9..7 & \s{sel\_depuracao} & página de HEX5..HEX0 \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.57\linewidth}
+\vspace{0pt}
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+LED & Sinal & O que indica \\
+\midrule
+LEDR0 & \s{db\_ligar} & a chave SW1 direto (antes do sincronizador) \\
+LEDR1 & \s{db\_echo} & echo do sensor \\
+LEDR2 & \s{db\_trigger} & trigger (10\,µs, quase invisível) \\
+LEDR3 & \s{db\_pwm} & PWM do servo (brilho fraco) \\
+LEDR4 & \s{db\_saida\_serial} & linha TX; aceso em repouso \\
+LEDR5 & \s{db\_entrada\_serial} & linha RX; aceso em repouso se o TXD está ligado \\
+LEDR8..6 & \s{db\_posicao} & posição do servo em binário \\
+LEDR9 & \s{db\_modo} & aceso fora da localização (atenção ou modo novo); o número do modo está no HEX4 da pág.\ 011 \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+% ==========================================================================
+\section{Páginas dos displays (SW9..7)}
+
+O multiplexador \s{U3\_PAGINA} (\s{sonar2.v}) escolhe 1 de 8 páginas de 6
+dígitos. HEX5 é o display mais à esquerda.
+
+\begin{tabularx}{\linewidth}{@{}l l Y Y Y Y Y@{}}
+\toprule
+SW9..7 & Página & HEX5 & HEX4 & HEX3 & HEX2 & HEX1 HEX0 \\
+\midrule
+000 & sonar (= exp5) & estado UC & estado HC-SR04 & posição 0--7 & distância (centena) & distância (dez., unid.) \\
+001 & serial & estado TX & char TX (ASCII) & char TX (ASCII) & estado RX & char RX (ASCII) \\
+010 & mensagem & ângulo & ângulo & ângulo & distância & distância \\
+011 & comandos & estado UC & modo 0--3 (0 loc., 1 atenção, 2--3 livres) & índice do char 0--7 & paridade ok & char RX (ASCII) \\
+1xx & livres (prova) & 0 & 0 & 0 & 0 & 0 0 \\
+\bottomrule
+\end{tabularx}
+
+Simulação (caso 20): 000 = \s{201050}, 001 = \s{030078}, 010 = \s{040050},
+011 = \s{200178}, 1xx = \s{000000}. ASCII: \s{a} = 61, \s{v} = 76, \s{A} = 41,
+\s{x} = 78, \s{0}--\s{9} = 30--39, \s{,} = 2C, \s{\#} = 23.
+Em funcionamento normal, a página 000 mostra \s{2 0} em HEX5 HEX4 quase o tempo
+todo. Página nova: edite \s{s\_pagina4} a \s{s\_pagina7} em \s{sonar2.v}
+(6 dígitos hex, 24 bits).
+
+% ==========================================================================
+\section{Códigos de estado}
+
+\begin{center}
+\begin{tikzpicture}[
+    >={Stealth[length=2mm]},
+    st/.style={draw=black!45, rounded corners=3pt, minimum width=2.45cm,
+               minimum height=1.08cm, align=center, inner sep=1pt},
+    bif/.style={st, draw=blue!60!black, very thick, fill=blue!7},
+    lbl/.style={font=\scriptsize, text=black!65},
+    modo/.style={font=\scriptsize\bfseries},
+    ar/.style={->, draw=black!55}
+  ]
+  \newcommand{\est}[3]{{\bfseries\large #1}\\[-1pt]{\footnotesize #2}\\[-2pt]{\scriptsize\color{black!60}\ttfamily #3}}
+  \def\dx{3.25}
+  % linha de cima
+  \node[st]  (s0) at (0*\dx, 0)   {\est{0}{inicial}{espera ligar}};
+  \node[st]  (s1) at (1*\dx, 0)   {\est{1}{preparação}{zera}};
+  \node[st]  (s2) at (2*\dx, 0)   {\est{2}{espera 2 s}{conta\_espera}};
+  \node[st]  (s3) at (3*\dx, 0)   {\est{3}{dispara medida}{mede (1 clock)}};
+  \node[st]  (s4) at (4*\dx, 0)   {\est{4}{espera medida}{conta\_timeout}};
+  % linha do meio
+  \node[st]  (s9) at (4*\dx, -2.1) {\est{9}{timeout}{limpa\_sensor}};
+  \node[st]  (s5) at (3*\dx, -2.1) {\est{5}{envia char}{transmite}};
+  \node[st]  (s6) at (2*\dx, -2.1) {\est{6}{espera tx}{fim\_transmissao}};
+  \node[bif] (s7) at (1*\dx, -2.1) {\est{7}{próximo char}{conta\_char}};
+  % fim do ciclo
+  \node[st]  (s8) at (0*\dx, -4.0) {\est{8}{muda posição}{conta\_posicao}};
+  \node[st]  (sA) at (1*\dx, -4.0) {\est{A}{final atenção}{fim\_posicao}};
+  \node[st]  (sF) at (0*\dx, -5.7) {\est{F}{final posição}{fim\_posicao}};
+
+  \coordinate (topy) at ($(s0.north)+(0,0.6)$);
+  \coordinate (gx)   at ($(s0.west)+(-0.45,0)$);
+  \coordinate (bot)  at ($(sF.south)+(0,-0.4)$);
+
+  \draw[ar] (s0) -- (s1);
+  \draw[ar] (s1) -- (s2);
+  \draw[ar] (s2) -- (s3);
+  \draw[ar] (s3) -- (s4);
+  \node[lbl, above] at ($(s0.north east)!.5!(s1.north west)$) {ligar};
+  \node[lbl, above] at ($(s2.north east)!.5!(s3.north west)$) {fim\_espera};
+
+  \draw[ar] (s4.south) -- node[lbl, right] {10 s (fim\_timeout)} (s9.north);
+  \draw[ar] ([xshift=-7mm]s4.south) -- ++(0,-0.45) -| node[lbl, pos=0.25, above] {fim\_medida} (s5.north);
+  \draw[ar] (s9) -- (s5);
+  \draw[ar] (s5) -- (s6);
+  \draw[ar] (s6) -- (s7);
+  \draw[ar] ([xshift=6mm]s7.south) -- ++(0,-0.45) -| node[lbl, pos=0.25, below] {faltam caracteres (8 no total)} (s5.south);
+
+  \draw[ar] (s7.west) -| node[modo, pos=0.25, above] {modo 0} (s8.north);
+  \draw[ar] (s7.south) -- node[modo, left] {modo 1} (sA.north);
+  \draw[ar] (s8) -- (sF);
+
+  \draw[ar] (sA.south) -- (sA.south |- bot) -- (gx |- bot) -- (gx |- topy)
+            -- node[lbl, pos=0.5, above] {volta a 2: novo ciclo} (s2.north |- topy) -- (s2.north);
+  \draw[draw=black!55] (sF.west) -- (gx |- sF.west);
+
+  \node[align=left, anchor=north west, font=\footnotesize] at ($(s5.south west)+(-0.2,-1.3)$) {%
+    \textbf{Regras da UC}\\
+    \s{ligar} = 0: qualquer estado $\to$ 0 no clock seguinte\\
+    modo (\s{Matual}, 2 bits): \s{a} $\to$ 1, \s{v} $\to$ 0, em qualquer estado\\
+    códigos livres para modos novos: 2, 3\\
+    em 0 (\s{inicial}) o modo volta a 0\\
+    servo só anda em 8 (\s{conta\_posicao})\\
+    códigos livres para estados novos: B, C, D, E};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Sinais de cada estado} (\s{sonar2\_uc}, Moore: cada sinal de controle
+fica em 1 só no seu estado; nos demais, todos em 0).
+
+\begin{tabularx}{\linewidth}{@{}l l >{\raggedright\arraybackslash}p{0.29\linewidth} >{\raggedright\arraybackslash}p{0.23\linewidth} Y@{}}
+\toprule
+Cód. & Estado & Sinal da UC em 1 $\to$ efeito no FD & Sai para (entrada da UC) & Nos pinos e LEDs \\
+\midrule
+0 & \s{inicial} & nenhum; modo forçado a 0 & 1 se \s{ligar} = 1 & servo parado na posição atual; \s{saida\_serial} = 1 (repouso) \\
+1 & \s{preparacao} & \s{zera}: posição (U4) $\to$ 000, char (U6) $\to$ 0, espera (U8), TX e sensor reiniciados & 2 (1 clock) & \s{pwm} vai a 0,7\,ms (020°); LEDR8..6 = 000 \\
+2 & \s{espera} & \s{conta\_espera}: U8 conta 2\,s & 3 com \s{fim\_espera} (U8) & tudo em repouso; servo se acomoda \\
+3 & \s{dispara\_medida} & \s{mede}: U1 inicia a medida; zera o timeout (U9) & 4 (1 clock) & \s{trigger}: pulso de 10\,µs \\
+4 & \s{espera\_medida} & \s{conta\_timeout}: U9 conta 10\,s & 5 com \s{fim\_medida} (pronto do U1); 9 com \s{fim\_timeout} (U9) & \s{echo} em 1 por 58,8\,µs/cm; HEX4 (sensor) 3 $\to$ 4 $\to$ 5 \\
+9 & \s{timeout\_medida} & \s{limpa\_sensor}: reinicia U1 (sai de espera echo) & 5 (1 clock) & mensagem sai com distância 000 \\
+5 & \s{envia\_char} & \s{transmite}: partida do TX (U2) com o char do mux (U7) & 6 (1 clock) & \s{saida\_serial} desce (start bit) \\
+6 & \s{espera\_tx} & nenhum & 7 com \s{fim\_transmissao} (pronto do U2) & \s{saida\_serial}: quadro de 86,8\,µs \\
+7 & \s{proximo\_char} & \s{conta\_char}: U6 avança o índice (0--7) & 5 se falta char; com \s{fim\_char}: 8 (modo 0) ou A (modo 1) & bifurcação; HEX3 da pág.\ 011 = índice \\
+8 & \s{muda\_posicao} & \s{conta\_posicao}: U4 avança (111 $\to$ 000) & F (1 clock) & \s{pwm} muda de largura: servo anda 20°; LEDR8..6 \\
+F & \s{final\_posicao} & \s{fim\_posicao} & 2 (1 clock) & pino \s{fim\_posicao}: pulso de 20\,ns \\
+A & \s{final\_atencao} & \s{fim\_posicao} & 2 (1 clock) & pulso de 20\,ns; servo não anda \\
+\bottomrule
+\end{tabularx}
+
+Sempre ativos, fora da UC: \s{pwm} (U3, 20\,ms, largura pela posição), recepção
+(U10) e FSM de modo. \s{ligar} = 0 leva a 0 de qualquer estado; \s{reset} leva a 0
+e ao modo 0. Saídas do topo: \s{trigger}, \s{pwm}, \s{saida\_serial},
+\s{fim\_posicao}, \s{db\_modo} (LEDR9), HEX5..0 e LEDR8..0.
+
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+Máquina & Onde aparece & Códigos \\
+\midrule
+HC-SR04 (\s{interface\_hcsr04\_uc}) & HEX4, pág.\ 000 & 0 inicial · 1 preparação · 2 envia trigger · 3 espera echo · 4 medida · 5 armazenamento · F final \\
+TX (\s{tx\_serial\_uc}) & HEX5, pág.\ 001 & 0 inicial · 1 preparação · 3 espera · 7 transmissão · F final \\
+RX (\s{rx\_serial\_uc}) & HEX2, pág.\ 001 & 0 inicial · 2 preparação · 3 espera · 7 recepção · 9 registra · F final \\
+\bottomrule
+\end{tabularx}
+
+% ==========================================================================
+\section{Servo: posição, ângulo e PWM}
+
+\begin{minipage}[t]{0.62\linewidth}
+\vspace{0pt}
+\begin{tabularx}{\linewidth}{@{}l l l l Y@{}}
+\toprule
+Posição & Ângulo & Largura & Clocks & ASCII da ROM \\
+\midrule
+000 & 020 & 0,700\,ms & 35\,000  & 30 32 30 \\
+001 & 040 & 0,914\,ms & 45\,700  & 30 34 30 \\
+010 & 060 & 1,129\,ms & 56\,450  & 30 36 30 \\
+011 & 080 & 1,343\,ms & 67\,150  & 30 38 30 \\
+100 & 100 & 1,557\,ms & 77\,850  & 31 30 30 \\
+101 & 120 & 1,771\,ms & 88\,550  & 31 32 30 \\
+110 & 140 & 1,986\,ms & 99\,300  & 31 34 30 \\
+111 & 160 & 2,200\,ms & 110\,000 & 31 36 30 \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\linewidth}
+\vspace{0pt}
+A posição (contador U4) escolhe a largura do pulso e o ângulo da ROM. LEDR8..6
+mostram a posição em binário.
+
+No modo 0 a varredura vai 000 $\to$ 111 e volta a 000 (dente de serra).
+
+Período de 20\,ms (1\,000\,000 clocks). Larguras em
+\s{controle\_servo\_8.v}, ângulos em \s{rom\_angulos\_8x24.v}.
+\end{minipage}
+
+% ==========================================================================
+\section{Analog Discovery / WaveForms}
+
+Canais conforme o planejamento. Todos os sinais em 3,3\,V do lado da FPGA; GND
+do AD no GND da placa.
+
+\begin{tabularx}{\linewidth}{@{}l l Y Y@{}}
+\toprule
+Sinal & Canal & Ferramenta e configuração & O que esperar \\
+\midrule
+\s{entrada\_serial} & DIO6 & Logic + UART ou Protocol: 115200, 7 bits, Even, Standard, LSB first; trigger $\downarrow$; 20\,µs/div & quadro de 86,8\,µs; \s{a} = 61, \s{v} = 76 \\
+\s{saida\_serial} & DIO7 & mesma configuração; 100\,µs/div & \s{aaa,ddd\#} em cerca de 700\,µs \\
+\s{pwm} & CH1+ & Scope: subida, 1,5\,V; 500\,µs/div (largura) ou 5\,ms/div (período) & 20\,ms; larguras da tabela do servo \\
+\s{trigger} & CH2+ & Scope: captura única, subida; 5\,µs/div & pulso de 10\,µs \\
+\s{echo} & DIO0 & Logic: subida; 2\,ms/div (10\,ms/div para o caso sem eco) & 58,8\,µs/cm; cerca de 47\,ms quando lê 807 \\
+\s{fim\_posicao} & DIO1 & Logic: 100\,MHz; modo Record para vários ciclos & pulso de 20\,ns a cada 2\,s \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Trigger e echo juntos no Scope} (usado na bancada em 08/10): mostra se o
+sensor responde ao disparo e a largura do echo. Mudar o 1$+$ do \s{pwm} para o
+ECHO (JP2 · 4); o 2$+$ continua no TRIG.
+
+\begin{tabularx}{\linewidth}{@{}l Y l Y@{}}
+\toprule
+Campo & Valor & Campo & Valor \\
+\midrule
+Mode / Trigger & Repeated / Auto & Time Base & 5,8\,ms/div \\
+Source & Channel 1 (\s{echo}) & Time Position & 4,971\,ms (disparo perto da esquerda) \\
+Type / Condition & Edge / Rising & Channel 1 e 2 & Offset 0\,V, Range 1\,V/div \\
+Level / Hyst. / HoldOff & 2\,V / Auto / 0\,s & Amostragem & 8192 amostras a 141\,kHz \\
+\bottomrule
+\end{tabularx}
+
+O que se vê: o trigger (CH2, azul) é um traço fino logo antes da subida do echo
+(10\,µs some a 5,8\,ms/div; para medir, 5\,µs/div); o echo (CH1, laranja) é um
+pulso de cerca de 3,3\,V com 58,8\,µs por cm (3,4\,ms $\approx$ 57\,cm). A janela
+vai até cerca de 34\,ms depois do disparo: cobre 4\,m (23,5\,ms), mas não o caso sem
+eco (47\,ms; usar 10\,ms/div). Echo em 0 depois do traço do trigger = sensor não
+respondeu (alimentação, GND ou fio do ECHO).
+
+\begin{itemize}
+  \item \textbf{Texto decodificado:} no UART do Logic, Format = ASCII.
+        \textbf{Congelar:} Mode = Single. \textbf{Salvar figura:} File $\to$ Export.
+  \item \textbf{Comando sem o CP2102:} Protocol $\to$ UART, TX no DIO6, Send \s{a}
+        (antes, desligar o TXD do CP2102 do JP1 pino 4).
+  \item \textbf{Servo no tempo:} Data Logger, CH1 no \s{pwm}, função \s{C1DC / 3.3 * 20}
+        (largura em ms): escada da varredura e patamar no modo atenção.
+  \item \textbf{Distância:} Scope com o \s{echo} num canal analógico, Measurements
+        $\to$ PosWidth; Custom \s{Channel.measure("PosWidth", T1, T2) / 58e-6} dá cm.
+  \item Scope e Data Logger usam os mesmos canais analógicos: um de cada vez.
+\end{itemize}
+
+% ==========================================================================
+\section{Sintoma $\to$ causa $\to$ ação}
+
+Ordem: alimentação e fios, chaves e páginas, Analog Discovery, comparação com a
+simulação. \bancada{} = aconteceu na bancada.
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth} Y Y@{}}
+\toprule
+Sintoma & Causa provável & Ação \\
+\midrule
+Nada acontece, HEX5 = 0 & SW1 = 0 ou SW0 = 1 & Ajustar as chaves; LEDR0 aceso = ligar ok \\
+Mensagens chegam, mas \s{a} não muda nada \bancada & Fio TXD $\to$ JP1 pino 4 solto ou no pino errado & LEDR5 aceso em repouso; página 011 deve mostrar 61; trocar o jumper \\
+\s{a} chega (61), paridade ok = 0 & Terminal fora de 7E1 & 115200, 7 bits, paridade par \\
+LEDR9 acende, mas o servo anda mais uma posição & \s{a} chegou depois da bifurcação & Previsto: para no fim do ciclo seguinte \\
+Comando ignorado com o sonar desligado & Previsto: em \s{inicial} o modo fica em 0 & Ligar antes de enviar \\
+HEX5 HEX4 = \s{3 0} parado após desligar/religar SW1 \bancada & SW1 assíncrona + UC one-hot sem safe state $\to$ estado ilegal & Corrigido com 2 FFs em \s{ligar}, \s{echo} e \s{entrada\_serial} (\s{sincronizador.v}); se voltar, reset (SW0) \\
+Leitura de 807\,cm em algumas posições \bancada & Sensor sem eco: segura o echo cerca de 47\,ms & Objeto plano e rígido a menos de 4\,m; Processing mostra ``Não Detectado'' \\
+HEX5 = 4, HEX4 = 3 por 10\,s, depois \s{aaa,000\#} & Sensor não respondeu (timeout) & Conferir 3,3\,V (JP2 · 29), GND e fio do echo \\
+HEX5 = 6 preso & Falha na transmissão & Analisar \s{saida\_serial} no DIO7 \\
+Servo parado ou tremendo & Queda de tensão do servo & Verificar 5\,V da fonte externa e o $-$ dela no GND comum \\
+\s{Device or resource busy} & Outro programa usa a porta & Fechar Processing ou picocom \\
+Processing não envia a tecla & Foco no editor & Clicar na janela do radar \\
+\s{A} maiúsculo não funciona & Caps Lock: \s{A} = 41 é ignorado & Desligar Caps Lock \\
+\s{No JTAG hardware available} & Cabo USB da placa desligado & Ligar o cabo; \s{make jtag} \\
+\bottomrule
+\end{tabularx}
+
+% ==========================================================================
+\section{Comandos}
+
+\begin{minipage}[t]{0.50\linewidth}
+\vspace{0pt}
+\begin{tabularx}{\linewidth}{@{}l Y@{}}
+\toprule
+Comando (em \s{labdig2/exp6}) & O que faz \\
+\midrule
+\s{make check TB=sonar2\_tb} & Icarus (cerca de 1\,min) \\
+\s{make simb TB=sonar2\_tb} & Questa batch; ``todos os casos OK'' \\
+\s{make sim TB=sonar2\_tb} & Questa com ondas \\
+\s{make regressao} & todos os \s{*\_tb.v} no Questa, com resumo \\
+\s{make} & compila (\s{.sof} + timing) \\
+\s{make timing} & relatório de timing \\
+\s{make jtag} / \s{make program} & lista o USB-Blaster / grava \\
+\s{make gui} & Quartus (Pin Planner, RTL Viewer) \\
+\s{make entrega} & \s{.qar} e zip do ModelSim em \s{entrega/} \\
+\s{make entrega-teste} & roda o zip extraído (antes de entregar) \\
+\bottomrule
+\end{tabularx}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+\vspace{0pt}
+\textbf{Terminal serial} (fechar o Processing antes):\\
+\s{ls /dev/ttyUSB*}\\
+\s{picocom -b 115200 -d 7 -y e -p 1 /dev/ttyUSB0}
+
+\s{-y} = paridade, \s{-p} = stop bits. Ctrl+A Ctrl+X sai; Ctrl+A Ctrl+C liga o
+eco local. Teste de paridade errada: 8N1 (\s{-d 8 -y n}) e teclar \s{v}: o modo
+não muda.
+
+\textbf{Processing:} porta \s{/dev/ttyUSB0}, já em 7E1. Clicar na janela do
+radar e teclar; o console mostra \s{Enviando tecla 'a' ...}. Acima de 100\,cm
+aparece ``Não Detectado''; só abaixo de 50\,cm vira ponto no radar.
+\end{minipage}
+
+\clearpage
+% ==========================================================================
+\section{Testbench: como modificar (prova)}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.21\linewidth} Y >{\raggedright\arraybackslash}p{0.20\linewidth}@{}}
+\toprule
+Arquivo & O que tem & Mexer quando \\
+\midrule
+\s{tb/cenario\_x\_tb.v} & o roteiro: casos, comandos, ciclos e conferências, em sequência & sempre (cenário novo) \\
+\s{sonar2\_tb\_config.vh} & tudo o que depende do circuito: DUT (portas e parâmetros), tempos da simulação, códigos dos modos, pulsos \s{recebeu\_*}, mensagem esperada, regra do \s{ANDA}, onde o modo aparece & o circuito mudou (procurar \s{EXTENSAO}) \\
+\s{sonar2\_tb\_base.vh} & clock, serial (lê e escreve), sensor, conferências, log e relatório da troca de modo & nunca \\
+\s{wave.do} & ondas de todos os cenários; nomes de estados e modos lidos da UC; pulsos \s{s\_recebeu\_*} entram sozinhos & sinal novo nas ondas (fim do arquivo) \\
+\bottomrule
+\end{tabularx}
+
+Estado ou modo novo na UC não muda nada no testbench nem nas ondas: os nomes saem
+das linhas \s{parameter nome = 4'hX;} (estado) e \s{parameter NOME = 2'dN;} (modo)
+da UC. No cenário, um estado pelo nome: \s{espera\_estado(dut.U1\_UC.muda\_posicao)}.
+
+\begin{minipage}[t]{0.45\linewidth}
+\vspace{0pt}
+\textbf{Esqueleto} (\s{cp tb/cenario\_m\_tb.v tb/cenario\_x\_tb.v} e trocar o nome do módulo)
+\begin{footnotesize}
+\begin{verbatim}
+`timescale 1ns/1ns
+module cenario_x_tb;
+`include "sonar2_tb_base.vh"
+  initial begin
+    inicia;                  // reset, liga
+    novo_caso(1, "localizacao");
+    ciclo(0, 15, ANDA);
+    novo_caso(2, "'a' na espera");
+    envia_comando("a", ATENCAO);
+    ciclo(1, 25, PARADO);
+    finaliza;                // relatorio
+  end
+endmodule
+\end{verbatim}
+\end{footnotesize}
+{\raggedright
+\s{make check TB=cenario\_x\_tb} (Icarus, 10--40\,s)\\
+\s{make sim TB=cenario\_x\_tb} (Questa, ondas)\\
+\s{make regressao} (todos; acha o cenário novo sozinho)\par}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.53\linewidth}
+\vspace{0pt}
+\textbf{Regra:} cada linha começa quando a anterior termina, e as tasks
+\s{espera\_*} param até o evento. Para um comando chegar num momento do ciclo,
+escreva a linha dele logo depois da task que espera aquele momento.
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth} Y@{}}
+\toprule
+Momento & Linhas do cenário \\
+\midrule
+na espera & \s{envia\_comando("a", ATENCAO);} \s{ciclo(p, cm, PARADO);} \\
+na medida & \s{espera\_trigger;} \s{envia\_comando(...);} \s{ciclo(...);} \\
+na transmissão & \s{responde\_echo(cm);} \s{espera\_transmissao;} \s{envia\_comando(...);} \s{fim\_ciclo(p, cm, ...);} \\
+num estado & \s{responde\_echo(cm);} \s{espera\_estado(dut.U1\_UC.x);} \s{envia\_comando(...);} \s{fim\_ciclo(...);} \\
+com o echo em 1 & \s{fork responde\_echo(cm); begin wait (echo\_in); \#(...); envia\_comando(...); end join} (caso 12 dos exemplos) \\
+\bottomrule
+\end{tabularx}
+
+Antes da bifurcação (espera, medida, transmissão) o comando já vale no próprio
+ciclo. Vários comandos seguidos podem passar da espera de 200\,µs: o \s{ciclo}
+responde ao trigger que já veio. Padrões prontos: \s{tb/cenario\_exemplos\_tb.v}.
+\end{minipage}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.40\linewidth} Y@{}}
+\toprule
+Task & O que faz \\
+\midrule
+\s{inicia} · \s{finaliza} & reset e liga · desliga, relatório das trocas de modo e resultado \\
+\s{novo\_caso(n, "texto")} & número e texto do caso no log e nas ondas (\s{caso}, \s{caso\_texto}) \\
+\s{ciclo(p, cm, depois)} & trigger, echo de \s{cm}, \s{fim\_posicao}; confere \s{aaa,ddd\#} e o servo em \s{depois} \\
+\s{depois} & \s{ANDA} (regra da config), \s{PARADO} ou a posição exata (0--7) \\
+\s{responde\_echo(cm)} + \s{fim\_ciclo(p, cm, depois)} & o mesmo ciclo em duas metades, para pôr algo no meio \\
+\s{medida(p, cm)} & echo e mensagem conferida, sem esperar o fim do ciclo (várias medidas por posição) \\
+\s{ciclo\_sem\_echo(p, depois)} & sensor não responde: \s{aaa,000\#} e duração $\geq$ \s{T\_TIMEOUT} \\
+\s{envia\_comando(c, modo)} & quadro 7E1 (87\,µs) e confere o modo na UC, no LEDR9 e no HEX4 da pág.\ 011 \\
+\s{envia\_comando\_paridade\_errada(c, modo)} & quadro com a paridade invertida; confere que o modo não mudou \\
+\s{envia\_char(c, PARIDADE\_OK)} & só o quadro, sem conferir \\
+\s{espera\_trigger} · \s{espera\_transmissao} · \s{espera\_mensagem} · \s{espera\_fim\_ciclo} · \s{espera\_estado(e)} & param até o evento da medida atual; voltam na hora se ele já aconteceu \\
+\s{liga} · \s{desliga} · \s{aplica\_reset} & \s{ligar} = 1 · \s{ligar} = 0 e espera 100\,µs · pulso de 2\,µs no reset \\
+\s{confere\_mensagem(p, cm)} · \s{confere\_posicao(p)} · \s{confere\_modo(m)} · \s{confere\_estado(e)} & conferências avulsas \\
+\s{confere\_pagina(sel, 24'hXXXXXX)} & os 6 dígitos de uma página; depois volta à página anterior \\
+\s{confere\_sinal("nome", sinal, valor)} & qualquer sinal: LED, GPIO novo, interno (\s{dut.s\_...}) \\
+\s{confere\_tempo("nome", t, min, max)} & intervalo em ns; \s{t\_trigger}, \s{t\_trigger\_ant}, \s{t\_fim\_ciclo}, \s{T\_ESPERA}, \s{T\_TIMEOUT}, \s{T\_QUADRO} \\
+\s{rastro\_uc = 1;} & imprime cada transição da UC, com o nome do estado \\
+\bottomrule
+\end{tabularx}
+
+\noindent\begin{minipage}{\linewidth}
+\textbf{O circuito mudou: o que mexer no testbench}\\[2pt]
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth} Y@{}}
+\toprule
+Mudança no circuito & No testbench \\
+\midrule
+Estado novo na UC & nada (nome lido da UC; ondas também) \\
+Modo novo (código 2 ou 3) & config: \s{localparam DUPLO = 2;} \\
+Comando novo (\s{s\_recebeu\_x}) & config: \s{always @(posedge dut.s\_recebeu\_x) registra\_comando("recebeu\_x");} Ondas: nada \\
+Caractere de comando trocado & cenário: \s{envia\_comando("N", ...)} \\
+Parâmetro novo no \s{sonar2} & config: \s{localparam X\_SIM} reduzido (2\,s $\to$ 200\,µs: $\div 10^4$) e \s{.X(X\_SIM)} no DUT \\
+Porta nova (LED, GPIO) & config: \s{wire x\_out;} e \s{.x(x\_out)} no DUT; cenário: \s{confere\_sinal("x", x\_out, 1);} \\
+Movimento diferente & config: \s{posicao\_seguinte}; ou a posição exata no \s{ciclo(p, cm, 6)} \\
+Várias medidas por posição & cenário: \s{medida(p, cm1); medida(p, cm2); espera\_fim\_ciclo; confere\_posicao(p+1);} \\
+Intervalo diferente & cenário: \s{t0 = t\_fim\_ciclo; espera\_trigger; confere\_tempo("intervalo", t\_trigger - t0, min, max);} \\
+Formato da mensagem & config: \s{TAM\_MSG} e \s{mensagem\_esperada} \\
+Página nova nos displays & cenário: \s{confere\_pagina(3'b100, 24'h...);} \\
+Modo mostrado em outro lugar & config, seção 7 (LED e dígito do display) \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+
+\begin{itemize}[before=\raggedright]
+  \item \textbf{Item ``localize a troca de modo'':} o \s{finaliza} imprime, para
+        cada troca, \s{rx\_pronto} (dado e paridade), \s{recebeu\_*}, a troca de
+        \s{Matual} e as transições da UC do fim do último ciclo no modo antigo até o
+        1º \s{dispara\_medida} no novo, mais \s{wave zoom range \ldots} para colar
+        no Questa. O \s{wave.do} abre com o grupo Troca\_de\_modo no topo.
+  \item \textbf{Icarus x Questa:} no \s{make check}, \s{gerador\_pulso\_tb} e
+        \s{interface\_hcsr04\_tb} falham por um artefato do Icarus: o
+        \s{gerador\_pulso} faz \s{pulso = 0} e depois \s{1} no mesmo
+        \s{always @(*)}, e o trigger ganha bordas de largura zero a cada clock. No
+        Questa (\s{make simb}, \s{make regressao}) os dois passam. Nos cenários,
+        esperar o trigger com \s{espera\_trigger}, nunca com \s{@(posedge trigger\_out)}.
+  \item \textbf{Cenário com erro de sintaxe} quebra o \s{make check} de todos (o
+        Icarus compila \s{tb/} inteiro): corrigir ou tirar de \s{tb/}. O
+        \s{make regressao} isola o arquivo e roda os outros.
+  \item \textbf{Tempos na simulação:} espera 200\,µs, timeout 20\,ms, quadro
+        87\,µs, echo 400\,µs depois do trigger, \s{cm} $\geq$ 1. O \s{sonar2\_tb}
+        leva cerca de 1\,min no Icarus.
+  \item \textbf{Entrega:} \s{make entrega-teste} monta o zip do ModelSim, extrai
+        numa pasta temporária e roda todos os testbenches, como quem corrige.
+\end{itemize}
+
+% ==========================================================================
+\section{Guia rápido de modificações (circuito)}
+
+Regra: o FD só detecta e executa; a UC decide.
+\s{grep -n EXTENSAO rtl/*.v *.vh wave.do} lista todos os pontos de mudança. Depois de
+mudar: \s{make check TB=...}, \s{make regressao}, \s{make}, \s{make timing}; arquivo
+novo em \s{rtl/}: \s{make sync}.
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth} >{\raggedright\arraybackslash}p{0.12\linewidth} Y@{}}
+\toprule
+Pedido do desafio & Onde & Como \\
+\midrule
+Trocar os caracteres dos comandos & \s{sonar2.v} & \s{CHAR\_ATENCAO = "N"}, \s{CHAR\_VOLTAR = "A"}; no cenário, \s{envia\_comando("N", ...)} \\
+Comando novo que muda o modo (ex.: \s{d}) & topo, FD, UC, tb & topo: parâmetro \s{CHAR\_DUPLO}, fio \s{s\_recebeu\_duplo}, ligar na UC e no FD (parâmetro e porta). FD: parâmetro, porta e um comparador igual aos outros. UC: porta, \s{parameter DUPLO = 2'd2;}, transições no \s{case (Matual)}, ramo na bifurcação. tb: \s{localparam DUPLO = 2;} e o \s{always} do pulso \\
+Estado novo & \s{sonar2\_uc.v} & código livre B--E; transição no \s{case}; saída no bloco de Moore; estado final de um modo entra no \s{fim\_posicao}. tb e ondas: nada \\
+Várias medidas por posição & UC & flag na UC que marca a 1ª medida; na bifurcação: 1ª medida $\to$ estado novo $\to$ \s{espera}; 2ª $\to$ \s{muda\_posicao} (flag volta a 0) \\
+Intervalo diferente num modo (ex.: 1\,s) & FD + UC & cópia do U8 com parâmetro novo (o \s{\$clog2} acerta os bits) e \s{conta\_*} próprio vindo da UC; estado de espera só do modo \\
+Varredura vai-e-volta & só FD & U4 módulo 14; \s{s\_posicao = (s\_passo < 8) ? s\_passo[2:0] : 14 - s\_passo}; tb: posição exata no \s{ciclo} \\
+Ação única (ex.: \s{z} leva o servo a 000) & FD + UC & comparador \s{recebeu\_z}; FF de pedido na UC; na bifurcação, estado que ativa \s{zera\_posicao} (também em \s{preparacao}) \\
+Sinal novo nos displays & \s{sonar2.v} & \s{s\_pagina4..7}; sinal interno do FD vira saída \s{db\_...} \\
+LED ou GPIO novo & \s{sonar2.v} + \s{.qsf} & porta no topo, pino no Pin Planner (\s{make gui}); tb: porta no DUT da config \\
+Entrada assíncrona nova & \s{sonar2.v} & uma instância do \s{sincronizador} antes de ligar na UC ou no FD \\
+Tratar ``sem eco'' (807\,cm) & FD & comparador na distância ($>$ 400\,cm) que substitui o valor enviado \\
+\bottomrule
+\end{tabularx}
+
+O modo já tem 2 bits em todo o caminho (UC $\to$ topo $\to$ HEX4 da pág.\ 011;
+LEDR9 = modo $\neq$ 0): um modo novo não muda a largura de nada. Os contadores de
+tempo usam \s{N = \$clog2(M)}: qualquer tempo cabe (com \s{N} fixo, um \s{M} maior
+que $2^N$ travava a placa e passava na simulação).
+
+\textbf{Ensaio (08/10):} o modo duplo (\s{d}, 2 medidas por posição) feito só nos
+pontos \s{EXTENSAO}: 15 edições no RTL, 2 linhas na config e um cenário de
+20 linhas; passou de primeira, com os nomes do estado e do modo novos no log e
+nas ondas.
+
+% ==========================================================================
+\section{Decisões de projeto (perguntas prováveis)}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth} Y@{}}
+\toprule
+Pergunta & Resposta curta \\
+\midrule
+Por que a troca de modo não perde comandos? & A FSM de modo (\s{Matual}) é atualizada pelo pulso \s{recebeu\_*} em qualquer estado, até no meio da medida ou da transmissão. \\
+Por que a bifurcação fica no fim do ciclo? & A única diferença entre os modos é o reposicionamento, que já era o último passo. O ciclo em andamento termina de medir e transmitir. \\
+Onde o servo para no modo atenção? & Na UC: o modo 1 pula \s{muda\_posicao}. Não há porta lógica sobre o \s{pwm} nem sobre sinais de controle. \\
+Por que conferir a paridade? & Um quadro corrompido poderia virar \s{a} ou \s{v}; quadros com paridade errada são descartados. \\
+Por que \s{fim\_posicao} pulsa também em atenção? & Marca o fim de cada ciclo; o tb e o Analog Discovery usam o pulso para sincronizar. \\
+O que acontece ao religar? & \s{inicial} força o modo 0 (como o reset) e \s{preparacao} zera a posição. \\
+Por que as entradas assíncronas passam por 2 flip-flops? & O Quartus codifica as FSMs em one-hot sem safe state; uma entrada que muda perto da borda do clock pode ser vista diferente por FFs diferentes e deixar a FSM num estado ilegal (HEX5 parado em 3 na bancada, 06/10). O \s{sincronizador} entrega um valor único por clock e dá tempo para a metaestabilidade se resolver; vale para \s{ligar}, \s{echo} e \s{entrada\_serial}. \\
+O atraso de 40\,ns atrapalha? & Não: o echo atrasa nas duas bordas (a largura não muda) e 40\,ns são 0,5\,\% de um bit da serial. \\
+Por que o modo tem 2 bits se há 2 modos? & Reserva para a prova: um modo novo só muda a UC. O LEDR9 acende fora da localização e o HEX4 da pág.\ 011 mostra o número. \\
+Por que 807\,cm? & É o pulso de cerca de 47\,ms que o sensor gera sem eco; o circuito mede corretamente. \\
+Recursos do projeto & 259 ALMs (1\%), 331 registradores, 64 pinos; pior setup 15,14\,ns, pior hold 0,149\,ns; Fmax 214\,MHz. \\
+\bottomrule
+\end{tabularx}
+
+\end{document}

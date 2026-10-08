@@ -67,7 +67,7 @@ void setup() {
     orcFont = loadFont("OCRAExtended-24.vlw");
     
     // interface serial
-1
+    myPort = new Serial(this, porta, baudrate, parity, databits, stopbits);
     // leitura de dados da porta serial até o caractere '#' (para leitura de "angulo,distancia#"
     myPort.bufferUntil('#'); 
     //myPort.bufferUntil('['); 

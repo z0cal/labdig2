@@ -17,6 +17,7 @@
 %%EndFeature
 %%EndSetup
 %%Page: 1 1
+gsave 0 0 0 setrgbcolor newpath 14.8860 15.4980 moveto 521.1184 15.4980 lineto 521.1184 246.3400 lineto 14.8860 246.3400 lineto closepath fill grestore % colore_ondas
 gsave
 0 250.56000000000003 translate 0.12 dup neg scale
 % dump string table
@@ -40,7 +41,23 @@ gsave
 (estado) MLW
 (posicao) MLW
 (trigger) MLW
+% colore_ondas: tema escuro % colore_ondas
+/CorOnda {0.00 1.00 0.00 setrgbcolor} def % colore_ondas
+/CorBus {0.00 1.00 0.00 setrgbcolor} def % colore_ondas
+/CorValor {1.00 1.00 1.00 setrgbcolor} def % colore_ondas
+/CorNome {0.85 0.85 0.85 setrgbcolor} def % colore_ondas
+/CorTique {0.30 0.30 0.30 setrgbcolor} def % colore_ondas
+/CorX {0.60 0.00 0.00 setrgbcolor} def % colore_ondas
+/CorGrade {0.28 0.28 0.28 setrgbcolor} def % colore_ondas
+/CorRegua {0.90 0.90 0.90 setrgbcolor} def % colore_ondas
+/Modo 0 def % colore_ondas
+/LarguraOnda 5 def % colore_ondas
+/LS {SX lineto Modo 1 eq {currentlinecap 1 eq {CorOnda LarguraOnda} {CorTique 3} ifelse setlinewidth} if stroke} def % colore_ondas
+/ST {Modo 1 eq {CorBus LarguraOnda setlinewidth} if stroke} def % colore_ondas
+/LFS {SX lineto Modo 1 eq {CorX} if fill stroke} def % colore_ondas
+/RSS {Modo 1 eq {currentpoint pop MaxLabelWidth LMargin add 10 add lt {CorNome} {CorValor} ifelse} if rmoveto show stroke} def % colore_ondas
 % draw waveform shading
+/Modo 1 def % colore_ondas
 [] 0 SD
 3 setlinewidth
 0 setlinejoin
@@ -90,6 +107,7 @@ gsave
 4274 1458 MT 4378 1458 LS
 4378 1458 MT 4378 1458 LS
 % draw timeline
+/Modo 0 def CorRegua 3 setlinewidth % colore_ondas
 0 setlinecap
 838 1623 MT 838 1660 LS
 837 1642 MT 839 1642 LS
@@ -116,6 +134,7 @@ gsave
 4751 1623 MT 4751 1660 LS
 4960 1623 MT 4960 1660 LS
 % draw grid
+/Modo 0 def CorGrade 3 setlinewidth % colore_ondas
 980 120 MT 980 1596 LS
 1503 120 MT 1503 1596 LS
 2027 120 MT 2027 1596 LS
@@ -124,6 +143,7 @@ gsave
 3599 120 MT 3599 1596 LS
 4122 120 MT 4122 1596 LS
 % draw waveforms
+/Modo 1 def % colore_ondas
 (ligar) 9999 LC 778 269 WT TSE RSS
 973 120 MT 987 120 LS
 1496 120 MT 1510 120 LS
@@ -233,6 +253,7 @@ gsave
 4274 1458 MT 4378 1458 LS
 4378 1458 MT 4378 1458 LS
 % draw footer
+/Modo 0 def CorRegua 3 setlinewidth % colore_ondas
 (Entity:sonar2_tb  Architecture:fast  Date: Sat Oct 03 12:27:35 -03 2026   Row: 1 Page: 1) 9999 LC 120 1967 WT TSW RSS
 grestore
 showpage

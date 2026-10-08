@@ -29,6 +29,7 @@ pela serial. Top: **`sonar2`** (interface da Fig. 1 do roteiro).
 
 ```
 sonar2                      top: displays (páginas), LEDs, ligações
+├── sincronizador × 3        2 FFs em ligar, echo e entrada_serial
 ├── sonar2_uc               UC: FSM de sequência + FSM de modo
 ├── sonar2_fd               FD: o da exp5 + recepção de comandos
 │   ├── interface_hcsr04    U1  medida de distância
@@ -38,8 +39,8 @@ sonar2                      top: displays (páginas), LEDs, ligações
 │   ├── rom_angulos_8x24    U5  ângulo da posição em ASCII
 │   ├── contador_m          U6  índice do caractere da mensagem
 │   ├── mux_8x1_n           U7  caractere da mensagem
-│   ├── contador_m          U8  espera de 2 s
-│   ├── contador_m          U9  timeout de 10 s da medida
+│   ├── contador_m          U8  espera de 2 s      (N = $clog2(M))
+│   ├── contador_m          U9  timeout de 10 s    (N = $clog2(M))
 │   └── rx_serial_7E1       U10 recepção dos comandos (novo)
 ├── mux_8x1_n (24 bits)     páginas de depuração (seção 1.2-C)
 └── hexa7seg × 6            HEX0..HEX5
@@ -89,7 +90,8 @@ Diagramas (fonte `.dot`, `.svg` e `.pdf` em `docs/figuras/`):
 Códigos livres para estados novos: B, C, D, E. Em qualquer estado, `ligar = 0`
 leva a `inicial`.
 
-FSM de modo (`Matual`, saída `db_modo`):
+FSM de modo (`Matual`, 2 bits, saída `db_modo`; códigos 2 e 3 livres para modos
+novos):
 
 ```
 LOCALIZACAO --recebeu_atencao ('a')--> ATENCAO
@@ -106,7 +108,7 @@ estado de sequência = inicial (desligado, reset, religar) --> LOCALIZACAO
 | 000    | sonar    | estado da UC    | estado HC-SR04 | posição    | distância   | distância     |
 | 001    | serial   | estado TX       | caractere TX   | caractere TX | estado RX | caractere RX  |
 | 010    | mensagem | ângulo          | ângulo         | ângulo     | distância   | distância     |
-| 011    | comandos | estado da UC    | modo           | índice do caractere | paridade ok | caractere RX |
+| 011    | comandos | estado da UC    | modo (0..3)    | índice do caractere | paridade ok | caractere RX |
 | 1xx    | livres   | 0               | 0              | 0          | 0           | 0             |
 
 - A página 000 é o layout da exp5. Com as chaves abaixadas, tudo fica como antes.
@@ -132,7 +134,7 @@ Códigos de estado das outras UCs:
 | LEDR1     | `db_echo`           | LEDR6 | `db_posicao[0]`       |
 | LEDR2     | `db_trigger`        | LEDR7 | `db_posicao[1]`       |
 | LEDR3     | `db_pwm`            | LEDR8 | `db_posicao[2]`       |
-| LEDR4     | `db_saida_serial`   | LEDR9 | **`db_modo`** (aceso = atenção) |
+| LEDR4     | `db_saida_serial`   | LEDR9 | **`db_modo`** (aceso fora da localização) |
 
 ## Pinagem (`quartus/de0_cv/exp6.qsf`)
 
@@ -155,10 +157,10 @@ do roteiro são os mesmos da exp5, mais a `entrada_serial`.
 ## Verificação
 
 ```
-make check TB=sonar2_tb     # Icarus, ~20 s
+make check TB=sonar2_tb     # Icarus, ~1 min (o Makefile sobe o limite do hdl.zsh)
 make simb  TB=sonar2_tb     # Questa em batch
-make sim   TB=sonar2_tb     # Questa com ondas (layout em wave.sonar2_tb.do)
-make regressao              # Questa: os 13 testbenches, com resumo no fim
+make sim   TB=sonar2_tb     # Questa com ondas (layout em wave.do)
+make regressao              # Questa: todos os *_tb.v (16 hoje), com resumo no fim
 ```
 
 O `Makefile` é ferramenta local e fica fora do git. No ModelSim/Questa, a partir
@@ -167,26 +169,36 @@ desta pasta ou do zip de entrega:
 ```
 do simula_todos.do          # todos os testbenches + resumo
 do simula.do                # sonar2_tb com as ondas organizadas
-do simula.do rx_serial_7E1_tb
+do simula.do cenario_m_tb
 ```
 
 Todo testbench confere os resultados sozinho e termina com
-`Fim da simulacao: todos os casos OK` ou `FALHA: n erro(s)`.
+`Fim da simulacao: todos os casos OK` ou `FALHA: n erro(s)`. O
+`simula_todos.do` acha os `*_tb.v` sozinho (cenário novo entra sem editar nada),
+compila numa biblioteca limpa e, se um arquivo não compila, roda os outros e
+mostra o problema no resumo.
+
+No Icarus (`make check`), `gerador_pulso_tb` e `interface_hcsr04_tb` falham por
+um artefato do simulador: o `gerador_pulso` faz `pulso = 0` e depois `pulso = 1`
+no mesmo `always @(*)`, e o trigger ganha bordas de largura zero a cada clock. O
+hardware não muda; no Questa os dois passam. Os testbenches do sistema esperam o
+trigger por `espera_trigger`, que ignora essas bordas.
 
 ### Plano de testes do sistema (`tb/sonar2_tb.v`)
 
-Espera de 2 s reduzida para 200 µs e timeout de 10 s reduzido para 20 ms. O
-testbench faz o papel do computador: lê `"aaa,ddd#"` na `saida_serial` e envia
-comandos pela `entrada_serial`, ambos em 7E1. Cada ciclo confere a mensagem e se
-o servo andou (`db_posicao` logo depois de `fim_posicao`). Cada comando confere
-`db_modo` logo depois do quadro.
+Espera de 2 s reduzida para 200 µs e timeout de 10 s reduzido para 20 ms
+(`sonar2_tb_config.vh`). O testbench faz o papel do sensor e do computador:
+responde a cada trigger com um echo, lê `"aaa,ddd#"` na `saida_serial` e envia
+comandos pela `entrada_serial`, ambos em 7E1. Cada ciclo confere a mensagem e
+a posição do servo depois do `fim_posicao`. Cada comando confere o modo na UC, no
+LEDR9 e no HEX4 da página 011 logo depois do quadro.
 
 | caso  | estímulo                                   | esperado |
 |-------|--------------------------------------------|----------|
 | 1–3   | modo localização                            | `020/040/060`, servo anda 000→011 |
 | 4     | `'a'` durante a espera                      | modo atenção; mede em 080 e o servo **não** anda |
 | 5     | ciclo em atenção                            | continua medindo e transmitindo, servo parado |
-| 6     | `'A'`, `'x'`, `'V'` e `'v'` com paridade errada (chegam durante a medida) | todos ignorados: continua em atenção |
+| 6     | `'A'`, `'x'`, `'V'` e `'v'` com paridade errada (passam da espera e chegam durante a medida) | todos ignorados: continua em atenção |
 | 7     | sem echo, em atenção                        | timeout ≥ 20 ms e `"080,000#"`, servo parado |
 | 8     | `'v'` durante a espera                      | modo localização; anda de 011 para 100 (retoma de onde parou) |
 | 9     | modo localização                            | 100 → 101 |
@@ -201,20 +213,114 @@ o servo andou (`db_posicao` logo depois de `fim_posicao`). Cada comando confere
 | 20    | `'x'` e as 8 páginas dos displays           | cada página mostra os valores esperados |
 
 **O testbench pega erros?** Cada mutação abaixo foi injetada no RTL e reprovada
-pelo testbench:
+pelo testbench (08/10, com a base nova):
 
-| mutação                                              | caso que reprova |
+| mutação                                              | 1º caso que reprova |
 |------------------------------------------------------|------------------|
-| sem bifurcação (servo sempre anda)                   | 4 em diante      |
+| sem bifurcação (servo sempre anda)                   | 4                |
 | sem conferir a paridade                              | 6                |
 | modo persiste ao religar                             | 18               |
 | comando por nível (`dado == 'a'`) em vez de pulso    | 18               |
+| LEDR9 sempre apagado                                 | 4                |
+| HEX4 da página 011 sempre 0                          | 4                |
 
-Testes de unidade (da exp5, mais o receptor): `hexa7seg`, `registrador_n`,
-`deslocador_n`, `contador_m`, `contador_bcd_3digitos`, `gerador_pulso`,
-`contador_cm`, `rom_angulos_8x24`, `controle_servo_8`, `interface_hcsr04`,
-`tx_serial_7E1` e `rx_serial_7E1`. Este último usa os casos do TB fornecido,
-cujo original fica em `extras/fornecido/`, mais `'a'`, `'v'` e quadros colados.
+Testes de unidade (da exp5, mais o receptor e o sincronizador): `hexa7seg`,
+`registrador_n`, `deslocador_n`, `contador_m`, `contador_bcd_3digitos`,
+`gerador_pulso`, `contador_cm`, `sincronizador`, `rom_angulos_8x24`,
+`controle_servo_8`, `interface_hcsr04`, `tx_serial_7E1` e `rx_serial_7E1`. Este
+último usa os casos do TB fornecido, cujo original fica em `extras/fornecido/`,
+mais `'a'`, `'v'` e quadros colados.
+
+### Testbenches de cenário (prova)
+
+O testbench do sistema fica em três camadas, para que um cenário novo (ou um
+circuito modificado) mexa no mínimo:
+
+| arquivo | conteúdo | mexer quando |
+|---|---|---|
+| `tb/cenario_*_tb.v` | só o roteiro: casos, comandos, ciclos e conferências, em sequência | sempre (cenário novo) |
+| `sonar2_tb_config.vh` | o que depende do circuito: DUT (portas e parâmetros), tempos da simulação, códigos dos modos, pulsos `recebeu_*` do relatório, mensagem esperada, regra do `ANDA`, onde o modo aparece (LED e display) | o circuito mudou (procurar `EXTENSAO`) |
+| `sonar2_tb_base.vh` | clock, serial (lê e escreve), sensor, conferências, log, relatório da troca de modo | nunca |
+| `wave.do` | ondas de todos os cenários | sinal novo nas ondas (fim do arquivo) |
+
+Os dois `.vh` ficam na raiz porque o Icarus (`make check`) procura o
+`` `include `` na pasta atual; o cenário só inclui a base, que inclui a config.
+
+**Estado e modo pelo nome, sem tabela para manter:** a base e o `wave.do` leem
+as linhas `parameter nome = 4'hX;` (estados) e `parameter NOME = 2'dN;` (modos)
+de `rtl/sonar2_uc.v`. Estado ou modo novo na UC aparece com o nome no log, no
+relatório e nas ondas sem mexer no testbench. No cenário, um estado pelo nome:
+`espera_estado(dut.U1_UC.muda_posicao)`. Os pulsos `s_recebeu_*` do topo entram
+sozinhos no grupo de ondas da troca de modo.
+
+**Cenário sequencial:** cada linha começa quando a anterior termina, e as tasks
+`espera_*` param até o evento acontecer. Para um comando chegar num momento do
+ciclo, escreva a linha dele depois da task que espera aquele momento:
+
+```verilog
+`timescale 1ns/1ns
+module cenario_x_tb;
+`include "sonar2_tb_base.vh"
+    initial begin
+        inicia;                                  // reset e ligar
+        novo_caso(1, "localizacao");
+        ciclo(0, 15, ANDA);                      // posição, cm, servo depois
+        novo_caso(2, "'a' na espera");
+        envia_comando("a", ATENCAO);             // quadro de 87 µs; confere o modo
+        ciclo(1, 25, PARADO);
+        novo_caso(3, "'v' durante a transmissao");
+        responde_echo(30);                       // trigger + echo de 30 cm
+        espera_transmissao;                      // 1º caractere começou
+        envia_comando("v", LOCALIZACAO);
+        fim_ciclo(1, 30, ANDA);                  // fim_posicao, mensagem, posição
+        finaliza;                                // relatório e $stop
+    end
+endmodule
+```
+
+| momento do comando | linhas |
+|---|---|
+| na espera | `envia_comando(...); ciclo(...);` |
+| na medida | `espera_trigger; envia_comando(...); ciclo(...);` |
+| na transmissão | `responde_echo(cm); espera_transmissao; envia_comando(...); fim_ciclo(...);` |
+| num estado da UC | `responde_echo(cm); espera_estado(dut.U1_UC.x); envia_comando(...); fim_ciclo(...);` |
+| com o echo em 1 | `fork` (caso 12 de `tb/cenario_exemplos_tb.v`) |
+
+Vários comandos seguidos podem passar da espera de 200 µs: o `responde_echo`
+(e o `ciclo`) responde ao trigger que já veio. O terceiro argumento de `ciclo`
+é `ANDA` (regra `posicao_seguinte` da config), `PARADO` ou a posição exata.
+As tasks estão listadas no cabeçalho de `sonar2_tb_base.vh` e na cola.
+
+| arquivo | conteúdo |
+|---|---|
+| `tb/cenario_m_tb.v` | Cenário M da prova modelo: 3 ciclos em localização, `'a'`, 2 em atenção (modelo para copiar) |
+| `tb/cenario_exemplos_tb.v` | um caso para cada padrão: comando na medida e na transmissão, sem echo, medida em passos com tempo conferido, estado, página, posição exata, comandos que passam da espera, sinal qualquer, religar, `fork`, rastro da UC |
+
+```
+cp tb/cenario_m_tb.v tb/cenario_x_tb.v      # e trocar o nome do módulo
+make check TB=cenario_x_tb                  # Icarus, 10–40 s
+make sim   TB=cenario_x_tb                  # Questa com o wave.do
+```
+
+O `finaliza` imprime, para cada troca de modo por comando, o quadro recebido
+(`rx_pronto`, dado, paridade), o pulso `recebeu_*`, a troca de `Matual` e as
+transições da UC desde o fim do último ciclo no modo antigo até o primeiro
+`dispara_medida` no modo novo, com o comando `wave zoom range` para colar no
+Questa. É o que o item de análise de ondas da prova pede.
+
+**Circuito modificado, o que muda no testbench** (pontos marcados com `EXTENSAO`
+na config):
+
+| mudança no circuito | no testbench |
+|---|---|
+| estado novo na UC | nada |
+| modo novo (código 2 ou 3) | config: `localparam DUPLO = 2;` |
+| comando novo (`s_recebeu_x`) | config: `always @(posedge dut.s_recebeu_x) registra_comando("recebeu_x");` |
+| parâmetro novo no `sonar2` | config: `localparam X_SIM` reduzido e `.X(X_SIM)` no DUT |
+| porta nova (LED, GPIO) | config: `wire x_out;` e `.x(x_out)` no DUT; cenário: `confere_sinal("x", x_out, 1);` |
+| movimento diferente | config: `posicao_seguinte`, ou a posição exata no `ciclo` |
+| várias medidas por posição | cenário: `medida(p, cm1); medida(p, cm2); espera_fim_ciclo; confere_posicao(...);` |
+| formato da mensagem | config: `TAM_MSG` e `mensagem_esperada` |
 
 ## Síntese
 
@@ -225,9 +331,9 @@ make program    # grava a placa
 make gui        # abre exp6.qpf no Quartus
 ```
 
-Resultado atual: 258 ALMs (1%), 319 registradores, 64 pinos e nenhum slack
-negativo (pior setup de 13,7 ns e pior hold de 0,17 ns). Não há caminhos sem
-restrição (`constraints/de0_cv.sdc`).
+Resultado atual (08/10): 259 ALMs (1%), 331 registradores, 64 pinos e nenhum
+slack negativo (pior setup de 15,1 ns e pior hold de 0,149 ns; Fmax de
+214 MHz). Não há caminhos sem restrição (`constraints/de0_cv.sdc`).
 
 ## Na bancada
 
@@ -299,45 +405,66 @@ Cuidados:
 
 ## Guia de modificações (prova)
 
-Depois de qualquer mudança: `make check TB=sonar2_tb`, depois `make` e
-`make timing`. Se o comportamento muda, acrescente um caso no `sonar2_tb`: as
-tarefas `ciclo`, `envia_comando`, `confere_modo` e `confere_pagina` já fazem quase
-tudo.
+Os pontos típicos de mudança estão marcados com `EXTENSAO`:
 
-**Trocar os caracteres dos comandos** (ex.: C1 = `'N'`, C2 = `'A'`): parâmetros
-do topo, em `rtl/sonar2.v`.
-
-```verilog
-parameter [7:0] CHAR_ATENCAO = "N",
-parameter [7:0] CHAR_VOLTAR  = "A"
+```
+grep -n EXTENSAO rtl/*.v *.vh wave.do
 ```
 
-O testbench envia `"a"`/`"v"`: troque nas chamadas de `envia_comando`.
+Depois de qualquer mudança: `make check TB=...` (ou um cenário novo),
+`make regressao`, `make` e `make timing`; arquivo novo em `rtl/` pede
+`make sync`. O modo já tem 2 bits em todo o caminho (UC, topo, HEX4 da página
+011; LEDR9 acende fora da localização), então um modo novo não muda a largura
+de nenhum sinal. Os contadores de tempo do FD calculam os bits pelo módulo
+(`N = $clog2(M)`): qualquer `ESPERA` ou `TIMEOUT` cabe. Com `N` fixo, um `M`
+maior que 2^N travava a placa em `espera` e passava na simulação, que usa `M`
+reduzido.
+
+**Trocar os caracteres dos comandos** (ex.: C1 = `'N'`, C2 = `'A'`): parâmetros
+do topo, em `rtl/sonar2.v` (`CHAR_ATENCAO = "N"`, `CHAR_VOLTAR = "A"`). No
+cenário, `envia_comando("N", ...)`.
 
 **Mostrar um sinal novo nos displays:** edite uma página livre em `rtl/sonar2.v`
 (`s_pagina4` a `s_pagina7`, 6 dígitos hexadecimais). Se o sinal for interno ao
 FD, crie uma saída `db_...` no `sonar2_fd` e ligue no topo. Um LED ou GPIO
-novo pede porta no `sonar2` mais pino no `.qsf` (Pin Planner, `make gui`).
+novo pede porta no `sonar2` mais pino no `.qsf` (Pin Planner, `make gui`) e,
+no testbench, a porta no DUT de `sonar2_tb_config.vh`.
 
 **Estado novo na UC:** em `rtl/sonar2_uc.v`, `parameter` com um código livre
-(B–E), as transições no `case` de próximo estado e as saídas no bloco de Moore.
-Acrescente o nome no `radix define estado_sonar` de `wave.sonar2_tb.do` e no
-diagrama `docs/figuras/uc_sonar2_modos.dot`.
+(B–E), as transições no `case` de próximo estado e as saídas no bloco de Moore;
+o estado final de um modo também entra no `fim_posicao`. Testbench e ondas
+pegam o nome sozinhos. Para o relatório, atualizar o diagrama
+`docs/figuras/uc_sonar2_modos.dot` (`make figura-uc`).
 
-**Terceiro modo / comando novo que muda o modo** (ex.: `'p'`):
+**Comando novo que muda o modo** (ex.: `'d'`, modo duplo):
 
-1. FD: `assign recebeu_p = s_rx_valido & (s_rx_dado == CHAR_P[6:0]);` mais a
-   porta de saída e o parâmetro `CHAR_P`. Ligue no topo.
-2. UC: `reg [1:0] Matual, Mprox;` com `LOCALIZACAO = 2'd0`, `ATENCAO = 2'd1` e
-   o novo `2'd2`; uma linha no `case (Matual)` para cada transição nova.
-3. UC: o ramo do novo modo na bifurcação (`proximo_char`), ou onde o
-   comportamento mudar, com estados próprios do modo.
+1. Topo: parâmetro `CHAR_DUPLO`, fio `s_recebeu_duplo`, ligação na UC e no FD
+   (parâmetro e porta).
+2. FD: parâmetro, porta e um comparador igual aos outros:
+   `assign recebeu_duplo = s_rx_valido & (s_rx_dado == CHAR_DUPLO[6:0]);`
+3. UC: porta, `parameter DUPLO = 2'd2;`, as transições no `case (Matual)` e o
+   ramo do modo na bifurcação (`proximo_char`), com estados próprios se
+   precisar.
+4. Testbench (`sonar2_tb_config.vh`): `localparam DUPLO = 2;` e
+   `always @(posedge dut.s_recebeu_duplo) registra_comando("recebeu_duplo");`.
+
+Ensaio feito em 08/10 numa cópia: o modo duplo (2 medidas por posição, com um
+flag na UC e o estado `final_duplo = 4'hB`) saiu com 15 edições no RTL, todas
+nos pontos `EXTENSAO`, 2 linhas na config e um cenário de 20 linhas; passou de
+primeira, com o estado e o modo novos pelo nome no log e nas ondas.
+
+**Várias medidas por posição:** um flag na UC (como o `Matual`) que marca a
+primeira medida; na bifurcação, primeira medida → estado novo → `espera`;
+segunda → `muda_posicao` (o flag volta a 0). No cenário:
+`medida(p, cm1); medida(p, cm2); espera_fim_ciclo; confere_posicao(p+1);`.
 
 **Intervalo diferente no modo atenção** (ex.: 1 s): um contador novo no FD
-(cópia do U8 com `M = 50_000_000`, `conta` = `conta_espera_atencao`). Na UC, um
+(cópia do U8 com o parâmetro novo, `conta` = `conta_espera_atencao`). Na UC, um
 estado `espera_atencao` só do modo 1:
 `final_atencao → espera_atencao → (fim_espera_atencao) → dispara_medida`. O
-contador sai sempre em `fim`, então já recomeça zerado no ciclo seguinte.
+contador sai sempre em `fim`, então já recomeça zerado no ciclo seguinte. No
+testbench, o parâmetro reduzido na config (1 s → 100 µs) e, no cenário,
+`confere_tempo("intervalo", t_trigger - t0, ...)`.
 
 **Movimentação vai-e-volta** (000 … 111 … 001 000 …), só no FD: o U4 vira um
 contador de passos módulo 14, e a posição sai do passo.
@@ -348,8 +475,8 @@ assign s_posicao = (s_passo < 4'd8) ? s_passo[2:0] : 4'd14 - s_passo;
 ```
 
 A UC não muda, e no modo atenção o sentido também fica congelado. No
-`sonar2_tb`, o "anda" de `ciclo` passa a seguir essa sequência em vez de
-`(posicao + 1) % 8`.
+cenário, passe a posição exata no terceiro argumento do `ciclo` (ou mude
+`posicao_seguinte` na config).
 
 **Ação única por comando** (ex.: `'z'` leva o servo a 000 sem mudar o modo):
 
@@ -359,6 +486,9 @@ A UC não muda, e no modo atenção o sentido também fica congelado. No
    desliga quando é atendido.
 3. UC: na bifurcação, se houver pedido, vá para um estado novo que ativa
    `zera_posicao`. O `zera_posicao` também precisa estar ativo em `preparacao`.
+
+**Entrada assíncrona nova** (botão, chave, GPIO): uma instância do
+`sincronizador` no topo antes de ligar o sinal na UC ou no FD.
 
 ## Decisões de projeto (perguntas prováveis)
 
@@ -376,16 +506,31 @@ A UC não muda, e no modo atenção o sentido também fica congelado. No
   pulso para sincronizar.
 - **O que acontece no religar?** O estado `inicial` força o modo localização
   (como o reset), e `preparacao` zera a posição, como na exp5.
+- **Por que as entradas assíncronas passam por 2 flip-flops?** O Quartus
+  codifica as FSMs em one-hot (sem *safe state machine*). Uma entrada ligada
+  direto, mudando perto da borda do clock, pode ser vista diferente por
+  flip-flops diferentes e deixar a FSM num estado ilegal (suspeita do HEX5
+  parado em 3 depois de desligar e religar a SW1, visto na bancada em 06/10).
+  O módulo `sincronizador` (2 FFs) entrega um valor único por clock para
+  `ligar`, `echo` e `entrada_serial`. O atraso de 40 ns não muda nada: o echo
+  atrasa nas duas bordas e 40 ns são 0,5 % de um bit da serial. Os LEDs
+  continuam mostrando os pinos direto.
+- **Por que o modo tem 2 bits se há 2 modos?** Reserva para a prova: um modo
+  novo só muda a UC. O LEDR9 acende fora da localização e o HEX4 da página 011
+  mostra o número do modo; o testbench confere os dois.
 
 ## Entrega e figuras
 
 ```
 make entrega        # entrega/exp6_t1ba5.qar e entrega/exp6_modelsim_t1ba5.zip
+make entrega-teste  # roda o zip do ModelSim extraído (antes de entregar)
 make figuras-sim    # docs/figuras/sim/*.pdf (abre a GUI do Questa e fecha)
 ```
 
-- O zip tem todo o Verilog, os testbenches, `simula.do`, `simula_todos.do` e o
-  layout de ondas. Os 13 testbenches passam rodando a partir do zip extraído.
+- O zip tem todo o Verilog, os testbenches, os includes (`sonar2_tb_base.vh` e
+  `sonar2_tb_config.vh`), `simula.do`, `simula_todos.do` e o `wave.do`.
+  `make entrega-teste` monta o mesmo zip numa pasta temporária, extrai e roda o
+  `simula_todos.do` de lá: os 16 testbenches passam (08/10).
 - O QAR restaurado em outra pasta compila sozinho.
 - `make figuras-sim` gera 11 figuras de ondas para o Planejamento (visão geral,
   ciclo, comandos, bifurcações, caracteres ignorados, timeout, comando durante
@@ -409,8 +554,9 @@ make figuras-sim    # docs/figuras/sim/*.pdf (abre a GUI do Questa e fecha)
   `gerador_pulso`, `contador_bcd_3digitos`), servo (`controle_servo_8`,
   `circuito_pwm`), mensagem (`rom_angulos_8x24`, `mux_8x1_n`, `tx_serial_7E1*`,
   `tx_serial_uc`) e os testbenches de unidade.
-- **Novos:** `sonar2`, `sonar2_uc`, `sonar2_fd`, `sonar2_tb`,
-  `rx_serial_7E1_tb`, `simula.do`, `simula_todos.do`, `wave.sonar2_tb.do`,
-  `scripts/exporta_ondas.do` e os diagramas de `docs/figuras/`.
+- **Novos:** `sonar2`, `sonar2_uc`, `sonar2_fd`, `sincronizador`, `sonar2_tb`,
+  `sincronizador_tb`, `rx_serial_7E1_tb`, os cenários (`tb/cenario_*_tb.v`),
+  `sonar2_tb_base.vh`, `sonar2_tb_config.vh`, `simula.do`, `simula_todos.do`,
+  `wave.do`, `scripts/exporta_ondas.do` e os diagramas de `docs/figuras/`.
 - Fontes de síntese: o disco. Arquivo novo em `rtl/` → `make sync` atualiza a
   lista do `.qsf`. Pinos e assignments ficam no `.qsf`.

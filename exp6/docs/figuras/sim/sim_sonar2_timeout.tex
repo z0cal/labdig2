@@ -2,11 +2,11 @@
 \begin{tikzpicture}[x=\linewidth/521, y=-\linewidth/521]
   \node[anchor=north west, inner sep=0] at (0,0)
     {\includegraphics[width=\linewidth, trim=0 12.7 0 0, clip]{figures/sim/sim_sonar2_timeout.pdf}};
-  \draw[sa] (91.7,29.9) node[an, right] {trigger sem echo} -- (79.7,35.9);
-  \draw[cota] (79.7,21.1) -- node[an, below] {espera\_medida: timeout de 20 ms (10 s na placa)} (487.9,21.1);
-  \draw[sa] (475.9,77.4) node[an, left] {fim\_timeout} -- (487.9,83.4);
-  \draw[sa] (475.9,101.1) node[an, left] {limpa\_sensor} -- (487.9,107.1);
-  \draw[sa] (475.2,147.7) node[an, left] {080,000\#} -- (489.2,154.7);
-  \node[an, anchor=center] at (283.8,170.4) {posição 3 mantida (modo atenção)};
-  \draw[sa] (491.6,196.2) node[an, left] {fim\_posicao} -- (503.6,202.2);
+  \draw[sa] (91.7,39.9) node[an, right] {trigger sem echo} -- (79.7,45.9);
+  \draw[cota] (79.7,31.1) -- node[an, below] {espera\_medida: timeout de 20 ms (10 s na placa)} (487.9,31.1);
+  \draw[sa] (475.9,87.4) node[an, left] {fim\_timeout} -- (487.9,93.4);
+  \draw[sa] (475.9,111.1) node[an, left] {limpa\_sensor} -- (487.9,117.1);
+  \draw[sa] (475.2,157.7) node[an, left] {080,000\#} -- (489.2,164.7);
+  \node[an, anchor=center] at (283.8,180.4) {posição 3 mantida (modo atenção)};
+  \draw[sa] (491.6,206.2) node[an, left] {fim\_posicao} -- (503.6,212.2);
 \end{tikzpicture}
