@@ -477,6 +477,7 @@ Comando (em \s{labdig2/exp6}) & O que faz \\
 \s{make check TB=sonar2\_tb} & Icarus (cerca de 1\,min) \\
 \s{make simb TB=sonar2\_tb} & Questa batch; ``todos os casos OK'' \\
 \s{make sim TB=sonar2\_tb} & Questa com ondas \\
+\s{sim cenario\_m\_tb} & igual a \s{make sim TB=...}; aceita o módulo ou \s{tb/cenario\_m\_tb.v} (Tab), não \s{cenario\_m\_tb.v}; \s{simb}/\s{check} direto têm limite de 60\,s (\s{sonar2\_tb} no Icarus: use \s{make check}) \\
 \s{make regressao} & todos os \s{*\_tb.v} no Questa, com resumo \\
 \s{make} & compila (\s{.sof} + timing) \\
 \s{make timing} & relatório de timing \\
@@ -501,6 +502,154 @@ não muda.
 radar e teclar; o console mostra \s{Enviando tecla 'a' ...}. Acima de 100\,cm
 aparece ``Não Detectado''; só abaixo de 50\,cm vira ponto no radar.
 \end{minipage}
+
+\clearpage
+% ==========================================================================
+\section{Workflow como máquina de estados: notebook (Linux)}
+
+Máquina de Moore: em cada estado você executa a saída (os comandos da tabela) e
+o resultado escolhe a transição. Seta preta: deu certo. Seta vermelha: deu
+errado, vai para \textbf{5 corrige}, que devolve ao circuito ou ao testbench.
+Terminal sempre na pasta \s{exp6}; \s{<tb>} = módulo ou caminho do arquivo.
+
+\begin{center}
+\begin{tikzpicture}[
+    >={Stealth[length=2mm]},
+    st/.style={draw=black!45, rounded corners=3pt, minimum width=2.6cm,
+               minimum height=0.95cm, align=center, inner sep=1pt},
+    err/.style={st, draw=red!60!black, thick, fill=red!6},
+    fim/.style={st, draw=green!40!black, thick, fill=green!6},
+    lbl/.style={font=\scriptsize, text=black!70, inner sep=1pt},
+    lble/.style={lbl, text=red!60!black},
+    ar/.style={->, draw=black!60},
+    are/.style={->, draw=red!60!black}
+  ]
+  \newcommand{\wf}[3]{{\bfseries #1}\,·\,#2\\[-1pt]{\scriptsize\color{black!65}\ttfamily #3}}
+  \def\dx{3.4}\def\dy{1.75}
+  \node[st]  (L0) at (0*\dx, 0)      {\wf{0}{início}{pasta exp6}};
+  \node[st]  (L1) at (1*\dx, 0)      {\wf{1}{planeja}{grep EXTENSAO}};
+  \node[st]  (L2) at (2*\dx, 0)      {\wf{2}{circuito}{rtl/ · make sync}};
+  \node[st]  (L3) at (3*\dx, 0)      {\wf{3}{testbench}{config · cenário}};
+  \node[st]  (L4) at (4*\dx, 0)      {\wf{4}{simula}{simb <tb>}};
+  \node[err] (L5) at (3*\dx, -\dy)   {\wf{5}{corrige}{sim <tb> · rs}};
+  \node[st]  (L6) at (4*\dx, -2*\dy) {\wf{6}{regressão}{make regressao}};
+  \node[st]  (L7) at (3*\dx, -2*\dy) {\wf{7}{síntese}{make · make timing}};
+  \node[st]  (L8) at (2*\dx, -2*\dy) {\wf{8}{placa}{make program}};
+  \node[st]  (L9) at (1*\dx, -2*\dy) {\wf{9}{entrega}{make entrega-teste}};
+  \node[fim] (LF) at (0*\dx, -2*\dy) {\wf{F}{fim}{.qar e .zip}};
+
+  \draw[ar] (L0) -- (L1);
+  \draw[ar] (L1) -- (L2);
+  \draw[ar] (L2) -- (L3);
+  \draw[ar] (L3) -- (L4);
+  \draw[ar] (L1.north) to[bend left=22] node[lbl, above] {só cenário} (L3.north);
+  \draw[ar] (L4) -- (L6);
+  \draw[ar] (L6) -- (L7);
+  \draw[ar] (L7) -- (L8);
+  \draw[ar] (L8) -- (L9);
+  \draw[ar] (L9) -- (LF);
+  \draw[are] (L4.south west) -- node[lble, pos=0.5, right=3pt] {FALHA, erro} (L5.north east);
+  \draw[are] (L6.north west) -- node[lble, pos=0.5, right=3pt] {FALHA} (L5.south east);
+  \draw[are] (L7) -- node[lble, right] {erro} (L5);
+  \draw[are] (L8.north east) -- node[lble, pos=0.5, left=3pt] {placa $\neq$ simulação} (L5.south west);
+  \draw[ar] ([xshift=3mm]L5.north) -- node[lbl, right] {cenário} ([xshift=3mm]L3.south);
+  \draw[ar] (L5.north west) -- node[lbl, pos=0.5, left=3pt] {circuito} (L2.south east);
+  \draw[ar] (LF.north) -- ++(0,0.6) -| node[lbl, pos=0.25, above] {próximo pedido} (L1.south);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} Y >{\raggedright\arraybackslash}p{0.22\linewidth}@{}}
+\toprule
+Estado & O que fazer & Vai para \\
+\midrule
+0 início & terminal na pasta: \s{cd \textasciitilde/projetos/labdig2/exp6} & 1 \\
+1 planeja & ler o pedido; \s{grep -n EXTENSAO rtl/*.v *.vh wave.do}; guia de modificações da cola & 2 se muda o circuito; 3 se é só cenário \\
+2 circuito & editar \s{rtl/} nos pontos \s{EXTENSAO}; arquivo novo em \s{rtl/}: \s{make sync} & 3 \\
+3 testbench & circuito mudou: \s{sonar2\_tb\_config.vh}; cenário: \s{cp tb/cenario\_m\_tb.v tb/cenario\_x\_tb.v} e trocar o nome do módulo & 4 \\
+4 simula & \s{simb <tb>} (ou \s{make simb TB=cenario\_x\_tb}); 6\,s por cenário & 6 se ``todos os casos OK''; 5 se FALHA ou erro de compilação \\
+5 corrige & \s{sim <tb>}: ondas com o \s{wave.do}; colar o \s{wave zoom range} do relatório; \s{rastro\_uc = 1;} no cenário; editar e digitar \s{rs} no Questa & 2 se o erro é do circuito; 3 se é do cenário \\
+6 regressão & \s{make regressao}: todos os \s{*\_tb.v}, resumo no fim & 7 se 0 com falha; 5 se não \\
+7 síntese & \s{make} e \s{make timing} & 8 se TIMING PASS; 5 se erro \\
+8 placa & \s{make jtag}, \s{make program}; SW0 = reset, SW1 = ligar, SW9..7 = página; tabela sintoma $\to$ causa $\to$ ação & 9 se funciona; 5 se a placa difere da simulação \\
+9 entrega & \s{make entrega-teste} (zip extraído roda?); depois \s{make entrega} (\s{entrega/}) & F se OK; 5 se o zip falha \\
+F fim & enviar o \s{.qar} e o \s{.zip}; para o PC da faculdade: \s{make pacote} & 1 no próximo pedido \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+% ==========================================================================
+\section{Workflow como máquina de estados: PC da faculdade}
+
+Sem \s{make}: Quartus e ModelSim/Questa pela interface. A pasta vem do notebook
+(\s{make pacote}): o Quartus abre o projeto dela e o ModelSim simula a partir
+dela, então os dois usam a mesma cópia do RTL. Mesma convenção de setas.
+
+\begin{center}
+\begin{tikzpicture}[
+    >={Stealth[length=2mm]},
+    st/.style={draw=black!45, rounded corners=3pt, minimum width=2.6cm,
+               minimum height=0.95cm, align=center, inner sep=1pt},
+    err/.style={st, draw=red!60!black, thick, fill=red!6},
+    fim/.style={st, draw=green!40!black, thick, fill=green!6},
+    lbl/.style={font=\scriptsize, text=black!70, inner sep=1pt},
+    lble/.style={lbl, text=red!60!black},
+    ar/.style={->, draw=black!60},
+    are/.style={->, draw=red!60!black}
+  ]
+  \newcommand{\wf}[3]{{\bfseries #1}\,·\,#2\\[-1pt]{\scriptsize\color{black!65}\ttfamily #3}}
+  \def\dx{3.0}\def\dy{1.75}
+  \node[st]  (F0) at (0*\dx, 0)      {\wf{0}{preparo}{make pacote}};
+  \node[st]  (F1) at (1*\dx, 0)      {\wf{1}{início}{C:\textbackslash exp6}};
+  \node[st]  (F2) at (2*\dx, 0)      {\wf{2}{projeto}{abrir exp6.qpf}};
+  \node[st]  (F3) at (3*\dx, 0)      {\wf{3}{circuito}{rtl\textbackslash}};
+  \node[st]  (F4) at (4*\dx, 0)      {\wf{4}{testbench}{config · cenário}};
+  \node[st]  (F5) at (5*\dx, 0)      {\wf{5}{simula}{do simula.do <tb>}};
+  \node[err] (F6) at (4*\dx, -\dy)   {\wf{6}{corrige}{ondas · zoom range}};
+  \node[st]  (F7) at (5*\dx, -2*\dy) {\wf{7}{todos}{do simula\_todos.do}};
+  \node[st]  (F8) at (4*\dx, -2*\dy) {\wf{8}{compila}{Ctrl+L · timing}};
+  \node[st]  (F9) at (3*\dx, -2*\dy) {\wf{9}{placa}{Programmer}};
+  \node[st]  (FA) at (2*\dx, -2*\dy) {\wf{A}{entrega}{Archive · zip}};
+  \node[fim] (FF) at (1*\dx, -2*\dy) {\wf{F}{fim}{pendrive}};
+
+  \draw[ar] (F0) -- (F1);
+  \draw[ar] (F1) -- (F2);
+  \draw[ar] (F2) -- (F3);
+  \draw[ar] (F3) -- (F4);
+  \draw[ar] (F4) -- (F5);
+  \draw[ar] (F2.north) to[bend left=22] node[lbl, above] {só cenário} (F4.north);
+  \draw[ar] (F5) -- (F7);
+  \draw[ar] (F7) -- (F8);
+  \draw[ar] (F8) -- (F9);
+  \draw[ar] (F9) -- (FA);
+  \draw[ar] (FA) -- (FF);
+  \draw[are] (F5.south west) -- node[lble, pos=0.5, right=3pt] {FALHA, erro} (F6.north east);
+  \draw[are] (F7.north west) -- node[lble, pos=0.5, right=3pt] {FALHA} (F6.south east);
+  \draw[are] (F8) -- node[lble, right] {erro} (F6);
+  \draw[are] (F9.north east) -- node[lble, pos=0.5, left=3pt] {placa $\neq$ simulação} (F6.south west);
+  \draw[ar] ([xshift=3mm]F6.north) -- node[lbl, right] {cenário} ([xshift=3mm]F4.south);
+  \draw[ar] (F6.north west) -- node[lbl, pos=0.5, left=3pt] {circuito} (F3.south east);
+  \draw[ar] (FF.north) -- ++(0,0.6) -| node[lbl, pos=0.25, above] {próximo pedido} (F3.south);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.13\linewidth} Y >{\raggedright\arraybackslash}p{0.22\linewidth}@{}}
+\toprule
+Estado & O que fazer & Vai para \\
+\midrule
+0 preparo & no notebook: \s{make pacote} $\to$ \s{entrega/exp6\_pasta\_t1ba5.zip} no pendrive (projeto + testbenches + cola). Reserva: \s{make entrega} (\s{.qar} e zip do ModelSim) & 1 \\
+1 início & extrair numa pasta sem espaço nem acento, ex.: \s{C:\textbackslash exp6}; Quartus: Help $\to$ About mostra a versão & 2 \\
+2 projeto & Quartus: File $\to$ Open Project $\to$ \s{quartus\textbackslash de0\_cv\textbackslash exp6.qpf}. Se não abrir (versão mais antiga): Project $\to$ Restore Archived Project com o \s{.qar}, ou New Project Wizard (Cyclone V 5CEBA4F23C7, top \s{sonar2}) + arquivos de \s{rtl} + Assignments $\to$ Import Assignments (\s{exp6.qsf}) & 3 se muda o circuito; 4 se é só cenário \\
+3 circuito & editar \s{rtl\textbackslash} nos pontos \s{EXTENSAO} (editor do Quartus ou Notepad++); arquivo novo: Project $\to$ Add/Remove Files in Project & 4 \\
+4 testbench & circuito mudou: \s{sonar2\_tb\_config.vh}; cenário: copiar \s{tb\textbackslash cenario\_m\_tb.v} e trocar o nome do módulo & 5 \\
+5 simula & ModelSim: File $\to$ Change Directory $\to$ \s{C:\textbackslash exp6}; no Transcript: \s{do simula.do cenario\_x\_tb} & 7 se ``todos os casos OK''; 6 se FALHA ou erro \\
+6 corrige & ondas já organizadas pelo \s{wave.do}; colar o \s{wave zoom range} do relatório; editar e repetir \s{do simula.do cenario\_x\_tb} & 3 se o erro é do circuito; 4 se é do cenário \\
+7 todos & \s{do simula\_todos.do} (resumo no fim do Transcript) & 8 se 0 com falha; 6 se não \\
+8 compila & Quartus: Processing $\to$ Start Compilation (Ctrl+L); Compilation Report $\to$ Timing Analyzer: setup e hold sem slack negativo & 9 se OK; 6 se erro \\
+9 placa & Tools $\to$ Programmer $\to$ Hardware Setup: USB-Blaster; Mode JTAG; \s{output\_files\textbackslash exp6.sof}; Start & A se funciona; 6 se a placa difere da simulação \\
+A entrega & Project $\to$ Archive Project (\s{exp6\_t1ba5.qar}); zip com \s{rtl}, \s{tb}, \s{*.vh} e \s{*.do}; testar: extrair numa pasta nova e \s{do simula\_todos.do} & F se OK; 6 se não \\
+F fim & pasta de volta no pendrive (o notebook não vê o que mudou aqui) & 3 no próximo pedido \\
+\bottomrule
+\end{tabularx}
 
 \clearpage
 % ==========================================================================
@@ -627,9 +776,10 @@ Modo mostrado em outro lugar & config, seção 7 (LED e dígito do display) \\
         \s{always @(*)}, e o trigger ganha bordas de largura zero a cada clock. No
         Questa (\s{make simb}, \s{make regressao}) os dois passam. Nos cenários,
         esperar o trigger com \s{espera\_trigger}, nunca com \s{@(posedge trigger\_out)}.
-  \item \textbf{Cenário com erro de sintaxe} quebra o \s{make check} de todos (o
-        Icarus compila \s{tb/} inteiro): corrigir ou tirar de \s{tb/}. O
-        \s{make regressao} isola o arquivo e roda os outros.
+  \item \textbf{Cenário com erro de sintaxe} quebra o \s{make check},
+        \s{make simb} e \s{make sim} de \emph{todos} (eles compilam \s{tb/}
+        inteiro): corrigir ou tirar de \s{tb/}. O \s{make regressao} e o
+        \s{do simula.do <tb>} isolam o arquivo e rodam os outros.
   \item \textbf{Tempos na simulação:} espera 200\,µs, timeout 20\,ms, quadro
         87\,µs, echo 400\,µs depois do trigger, \s{cm} $\geq$ 1. O \s{sonar2\_tb}
         leva cerca de 1\,min no Icarus.

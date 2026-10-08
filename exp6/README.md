@@ -524,6 +524,7 @@ cenário, passe a posição exata no terceiro argumento do `ciclo` (ou mude
 ```
 make entrega        # entrega/exp6_t1ba5.qar e entrega/exp6_modelsim_t1ba5.zip
 make entrega-teste  # roda o zip do ModelSim extraído (antes de entregar)
+make pacote         # pasta do projeto num zip, para o PC da faculdade (não é entrega)
 make figuras-sim    # docs/figuras/sim/*.pdf (abre a GUI do Questa e fecha)
 ```
 
@@ -532,6 +533,13 @@ make figuras-sim    # docs/figuras/sim/*.pdf (abre a GUI do Questa e fecha)
   `make entrega-teste` monta o mesmo zip numa pasta temporária, extrai e roda o
   `simula_todos.do` de lá: os 16 testbenches passam (08/10).
 - O QAR restaurado em outra pasta compila sozinho.
+- `make pacote` gera `entrega/exp6_pasta_t1ba5.zip` com `rtl/`, `tb/`, os `.vh`,
+  os `.do`, `constraints/`, o projeto do Quartus (`.qpf`/`.qsf`) e a cola. No PC
+  da faculdade, o Quartus abre `quartus/de0_cv/exp6.qpf` e o ModelSim roda o
+  `simula.do` na raiz: os dois usam a mesma cópia do RTL. Extraído numa pasta
+  nova, o pacote simula e compila sozinho (testado em 08/10). Os dois fluxos de
+  trabalho, notebook e PC da faculdade, estão como máquinas de estados nas
+  páginas 6 e 7 da cola.
 - `make figuras-sim` gera 11 figuras de ondas para o Planejamento (visão geral,
   ciclo, comandos, bifurcações, caracteres ignorados, timeout, comando durante
   a transmissão, religar e reset). Abre a GUI do Questa, que fecha sozinha.
