@@ -109,10 +109,9 @@ Fio do AD & Cor* & Prender em & Sinal (pino FPGA) & Ver com \\
 1$+$  & laranja        & sinal do servo (JP1 · 40)           & \s{pwm} (T15)            & Scope CH1 \\
 2$+$  & azul           & TRIG do HC-SR04 (JP2 · 2)           & \s{trigger} (A12)        & Scope CH2 \\
 DIO0  & rosa           & ECHO do HC-SR04 (JP2 · 4)           & \s{echo} (B12)           & Logic \\
-DIO1  & rosa           & direto no pino JP2 · 40 (não vai em mais nada) & \s{fim\_posicao} (K16) & Logic \\
-DIO6  & rosa           & TXD do CP2102 (JP1 · 4)             & \s{entrada\_serial} (C16) & Logic / Protocol UART \\
-DIO7  & rosa           & RXD do CP2102 (JP1 · 2)             & \s{saida\_serial} (B16)  & Logic / Protocol UART \\
-1$-$, 2$-$ & laranja/branco, azul/branco & GND comum      & referência dos canais     & --- \\
+DIO1  & verde          & direto no pino JP2 · 40 (não vai em mais nada) & \s{fim\_posicao} (K16) & Logic \\
+DIO6  & roxo          & TXD do CP2102 (JP1 · 4)             & \s{entrada\_serial} (C16) & Logic / Protocol UART \\
+DIO7  & marrom           & RXD do CP2102 (JP1 · 2)             & \s{saida\_serial} (B16)  & Logic / Protocol UART \\
 GND   & preto          & GND comum (JP2 · 30)                & referência do AD          & --- \\
 \bottomrule
 \end{tabularx}
@@ -651,56 +650,6 @@ não muda.
 radar e teclar; o console mostra \s{Enviando tecla 'a' ...}. Acima de 100\,cm
 aparece ``Não Detectado''; só abaixo de 50\,cm vira ponto no radar.
 \end{minipage}
-
-\clearpage
-% ==========================================================================
-\section{Prova (modelo P1): roteiro por atividade}
-
-A prova não é um ciclo de desenvolvimento: são três atividades, cada uma
-terminando numa apresentação ao professor. Os workflows das duas páginas
-seguintes entram dentro delas (síntese e placa na 1, simulação na 2). A
-Atividade 3 é projeto no papel. Cada seta: apresentou ao professor; esperando por ele, adiante a próxima.
-
-\begin{center}
-\begin{tikzpicture}[
-    >={Stealth[length=2mm]},
-    st/.style={draw=black!45, rounded corners=3pt, minimum width=3.15cm,
-               minimum height=1.05cm, align=center, inner sep=1pt},
-    fim/.style={st, draw=green!40!black, thick, fill=green!6},
-    lbl/.style={font=\scriptsize, text=black!70, inner sep=1pt},
-    ar/.style={->, draw=black!60}
-  ]
-  \newcommand{\wf}[3]{{\bfseries #1}\,·\,#2\\[-1pt]{\scriptsize\color{black!65}#3}}
-  \def\dx{3.75}
-  \node[st]  (P0) at (0*\dx, 0) {\wf{0}{bancada}{montar + sintetizar}};
-  \node[st]  (P1) at (1*\dx, 0) {\wf{1}{Atividade 1}{placa, testes, demo}};
-  \node[st]  (P2) at (2*\dx, 0) {\wf{2}{Atividade 2}{cenário M, ondas}};
-  \node[st]  (P3) at (3*\dx, 0) {\wf{3}{Atividade 3}{projeto no papel}};
-  \node[fim] (PF) at (4*\dx, 0) {\wf{F}{relato}{até o fim do dia}};
-  \draw[ar] (P0) -- (P1);
-  \draw[ar] (P1) -- (P2);
-  \draw[ar] (P2) -- (P3);
-  \draw[ar] (P3) -- (PF);
-  \draw[ar] (P1.south) to[bend right=18] node[lbl, below] {esperando o professor: adiantar a 2 e a 3} (P3.south);
-\end{tikzpicture}
-\end{center}
-
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth} Y@{}}
-\toprule
-Item & O que fazer e mostrar \\
-\midrule
-0 bancada & montagem da pág.\ 1 (GND primeiro; sensor em 3,3\,V; servo na fonte de 5\,V); enquanto isso, síntese: \s{make} (PC: Ctrl+L) \\
-1a, b, c & \s{make program}; plano de testes do Planejamento: EU1--EU4, EI1--EI2 e EI3 = ET1--ET12; demonstração: varredura, \s{a} (LEDR9, servo para), \s{v} (retoma), páginas \\
-1e-1: caracteres $\to$ modo & \s{sonar2.v:129} sincronizador da \s{entrada\_serial} $\to$ \s{sonar2\_fd.v:235} receptor U10 (pronto, dado, paridade) $\to$ \s{sonar2\_fd.v:251} comparadores: \s{recebeu\_atencao = pronto \& paridade\_ok \& (dado == 'a')} $\to$ \s{sonar2\_uc.v:101} FSM de modo (\s{Matual}) $\to$ \s{sonar2\_uc.v:139} bifurcação no fim do ciclo. Outro caractere: a UC nem fica sabendo \\
-1e-2: estado da transmissão & página 001 (\s{sonar2.v:224}): HEX5 = estado do TX (0 inicial, 1 preparação, 3 espera, 7 transmissão, F final; \s{tx\_serial\_uc.v:32}), HEX4 HEX3 = caractere em ASCII; pág.\ 011 HEX3 = índice 0--7; LEDR4 = \s{saida\_serial}; AD: DIO7 com Protocol UART 7E1; simulação: grupo Mensagem\_TX do \s{wave.do} \\
-2f, g & o Cenário M já está em \s{tb/cenario\_m\_tb.v} (020, 040, 060; \s{a} na espera; 2 ciclos em atenção, em 080). Para o servo parar em 060: \s{espera\_trigger; envia\_comando("a", ATENCAO); ciclo(2, 35, PARADO);} \\
-2 rodar & \s{simb tb/cenario\_m\_tb.v} (confere) e \s{sim tb/cenario\_m\_tb.v} (ondas). PC: \s{do simula.do cenario\_m\_tb} \\
-2h & colar o \s{wave zoom range} do relatório ``Troca de modo 1''. Grupo Troca\_de\_modo: \s{rx\_pronto}, \s{rx\_dado} = a, \s{paridade\_ok}, \s{recebeu\_atencao} (condição do FD) e \s{modo} (\s{Matual}) mudando; \s{estado}: 7 \s{proximo\_char} $\to$ 8 \s{muda\_posicao} $\to$ F \s{final\_posicao} $\to$ 2 \s{espera} $\to$ 3 \s{dispara\_medida}. Print para o relato \\
-3k, l (receita) & (1) interpretar: comando que entra, que sai, comportamento, quando vale (fim do ciclo). (2) FD: comparadores dos caracteres novos e componentes novos (contador) só com controle vindo da UC. (3) UC: FSM de modo + ramo na bifurcação + estados novos (B--E) + tabela de saídas. (4) anotar os diagramas impressos e fotografar. (5) mostrar que a restrição vale: nada reseta nem inibe componente pelo FD \\
-3 modelo (\s{d}/\s{x}) & FD: \s{recebeu\_duplo} (\s{d}) e \s{recebeu\_normal} (\s{x}), iguais aos de \s{a}/\s{v}; contador U11 de 1\,s (\s{conta\_espera\_duplo} $\to$ \s{fim\_espera\_duplo}). Modo: LOCALIZACAO $\to$ DUPLO (código 2) com \s{d}; DUPLO $\to$ LOCALIZACAO com \s{x}. Bifurcação em \s{proximo\_char}: DUPLO e 1ª medida $\to$ \s{espera\_duplo} (B, 1\,s) $\to$ \s{dispara\_medida}; DUPLO e 2ª $\to$ \s{muda\_posicao}. Flag \s{segunda} na UC: 1 em \s{espera\_duplo}, 0 em \s{muda\_posicao} e \s{inicial}. Validado em simulação (08/10): \s{prova/modelo\_duplo.patch} \\
-F relato & foto dos diagramas anotados, print das ondas do item h, resultado do plano de testes; enviar até o fim do dia \\
-\bottomrule
-\end{tabularx}
 
 \clearpage
 % ==========================================================================
