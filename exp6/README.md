@@ -308,6 +308,12 @@ transições da UC desde o fim do último ciclo no modo antigo até o primeiro
 `dispara_medida` no modo novo, com o comando `wave zoom range` para colar no
 Questa. É o que o item de análise de ondas da prova pede.
 
+Para localizar **outro** evento (timeout, comando ignorado, mudança de posição),
+guarde `t0 = $time;` antes e chame `relata_janela("nome", t0, $time);` depois:
+o mesmo relatório (quadros, pulsos `recebeu_*`, trocas de modo e estados da UC)
+para qualquer janela, com o `wave zoom range`. `marca("texto");` registra um
+instante no log. O passo a passo do enunciado às ondas está na cola, seção "Testbench na prova" (página 8).
+
 **Circuito modificado, o que muda no testbench** (pontos marcados com `EXTENSAO`
 na config):
 
@@ -539,7 +545,7 @@ make figuras-sim    # docs/figuras/sim/*.pdf (abre a GUI do Questa e fecha)
   `simula.do` na raiz: os dois usam a mesma cópia do RTL. Extraído numa pasta
   nova, o pacote simula e compila sozinho (testado em 08/10). Os dois fluxos de
   trabalho, notebook e PC da faculdade, estão como máquinas de estados nas
-  páginas 6 e 7 da cola.
+  páginas 9 e 10 da cola (seções "Workflow como máquina de estados").
 - `make figuras-sim` gera 11 figuras de ondas para o Planejamento (visão geral,
   ciclo, comandos, bifurcações, caracteres ignorados, timeout, comando durante
   a transmissão, religar e reset). Abre a GUI do Questa, que fecha sozinha.

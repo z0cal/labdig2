@@ -10,7 +10,7 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{tikz}
-\usetikzlibrary{positioning,calc,arrows.meta}
+\usetikzlibrary{positioning,calc,arrows.meta,decorations.pathreplacing}
 
 \setmainfont{TeX Gyre Heros}
 \setmonofont{DejaVu Sans Mono}[Scale=0.88]
@@ -249,6 +249,155 @@ Em funcionamento normal, a página 000 mostra \s{2 0} em HEX5 HEX4 quase o tempo
 todo. Página nova: edite \s{s\_pagina4} a \s{s\_pagina7} em \s{sonar2.v}
 (6 dígitos hex, 24 bits).
 
+\clearpage
+% ==========================================================================
+\section{Placa: o que cada display, LED e chave mostra}
+
+% Display de 7 segmentos: segmentos a..g na ordem do hexa7seg (1 = aceso)
+\tikzset{
+  segon/.style={line width=2pt, line cap=round, draw=red!80!black},
+  segoff/.style={line width=2pt, line cap=round, draw=black!8},
+}
+\newcommand{\seg}[2]{\ifnum#1=1 \draw[segon] #2;\else\draw[segoff] #2;\fi}
+\newcommand{\sete}[8]{%
+  \begin{scope}[shift={#1}, scale=0.62, xslant=0.1]
+    \draw[rounded corners=1.5pt, draw=black!35, fill=black!2] (-0.2,-0.2) rectangle (0.8,1.2);
+    \seg{#2}{(0.12,1.0)--(0.48,1.0)}%
+    \seg{#3}{(0.6,0.88)--(0.6,0.6)}%
+    \seg{#4}{(0.6,0.4)--(0.6,0.12)}%
+    \seg{#5}{(0.12,0.0)--(0.48,0.0)}%
+    \seg{#6}{(0.0,0.4)--(0.0,0.12)}%
+    \seg{#7}{(0.0,0.88)--(0.0,0.6)}%
+    \seg{#8}{(0.12,0.5)--(0.48,0.5)}%
+  \end{scope}}
+\newcommand{\hexdig}[2]{\ifcase"#2 \sete{#1}1111110\or\sete{#1}0110000\or
+  \sete{#1}1101101\or\sete{#1}1111001\or\sete{#1}0110011\or\sete{#1}1011011\or
+  \sete{#1}1011111\or\sete{#1}1110000\or\sete{#1}1111111\or\sete{#1}1111011\or
+  \sete{#1}1110111\or\sete{#1}0011111\or\sete{#1}1001110\or\sete{#1}0111101\or
+  \sete{#1}1001111\or\sete{#1}1000111\fi}
+% chave deslizante: #1 = posicao, #2 = 1 (para cima, ligada) ou 0
+\newcommand{\chave}[2]{%
+  \draw[rounded corners=1pt, draw=black!45, fill=black!4] ($#1+(-0.17,-0.32)$) rectangle ($#1+(0.17,0.32)$);
+  \ifnum#2=1 \fill[black!70, rounded corners=0.8pt] ($#1+(-0.12,0.02)$) rectangle ($#1+(0.12,0.27)$);
+  \else      \fill[black!70, rounded corners=0.8pt] ($#1+(-0.12,-0.27)$) rectangle ($#1+(0.12,-0.02)$);\fi}
+
+Da esquerda para a direita, como na placa. Exemplo do desenho (caso 20 da simulação):
+sonar ligado e em espera, servo na posição 001 (040°), última distância 050\,cm,
+página 000. Os LEDs não dependem da página.
+
+\begin{center}
+\begin{tikzpicture}[
+    ledon/.style={circle, draw=red!60!black, minimum size=3.4mm, inner sep=0pt, fill=red!75},
+    ledoff/.style={circle, draw=red!60!black, minimum size=3.4mm, inner sep=0pt, fill=white},
+    rot/.style={font=\scriptsize, align=center, text width=1.5cm, inner sep=1pt},
+    tit/.style={font=\scriptsize\bfseries, text=black!65, inner sep=1pt}
+  ]
+  \def\L{1.62}
+  % displays: HEX5 a HEX0
+  \foreach \k [count=\i from 0] in {5,4,3,2,1,0}
+    \node[tit] at (5.45+\i*0.8+0.2, -0.32) {HEX\k};
+  \hexdig{(5.45+0*0.8,0)}{2}
+  \hexdig{(5.45+1*0.8,0)}{0}
+  \hexdig{(5.45+2*0.8,0)}{1}
+  \hexdig{(5.45+3*0.8,0)}{0}
+  \hexdig{(5.45+4*0.8,0)}{5}
+  \hexdig{(5.45+5*0.8,0)}{0}
+  \node[font=\scriptsize, text=black!65, anchor=west] at (10.4, 0.38) {página escolhida em SW9..7};
+  % LEDs: LEDR9 a LEDR0
+  \foreach \nome/\txt/\est [count=\i from 0] in {
+      LEDR9/{modo $\neq$\\localização}/ledoff,
+      LEDR8/{posição\\bit 2}/ledoff,
+      LEDR7/{posição\\bit 1}/ledoff,
+      LEDR6/{posição\\bit 0}/ledon,
+      LEDR5/{entrada\\serial (RX)}/ledon,
+      LEDR4/{saída\\serial (TX)}/ledon,
+      LEDR3/{pwm}/ledoff,
+      LEDR2/{trigger}/ledoff,
+      LEDR1/{echo}/ledoff,
+      LEDR0/{ligar\\(chave SW1)}/ledon} {
+    \node[\est] at (0.4+\i*\L, -1.3) {};
+    \node[tit] at (0.4+\i*\L, -0.95) {\nome};
+    \node[rot, anchor=north] at (0.4+\i*\L, -1.55) {\txt};
+  }
+  % chaves: SW9 a SW0
+  \foreach \nome/\txt/\pos [count=\i from 0] in {
+      SW9/{página\\bit 2}/0, SW8/{página\\bit 1}/0, SW7/{página\\bit 0}/0,
+      SW6/{livre}/0, SW5/{livre}/0, SW4/{livre}/0, SW3/{livre}/0, SW2/{livre}/0,
+      SW1/{ligar}/1, SW0/{reset}/0} {
+    \chave{(0.4+\i*\L, -2.95)}{\pos}
+    \node[tit] at (0.4+\i*\L, -2.45) {\nome};
+    \node[rot, anchor=north] at (0.4+\i*\L, -3.32) {\txt};
+  }
+\end{tikzpicture}
+\end{center}
+
+\textbf{O que cada display mostra em cada página} (mesmo exemplo; distância e ângulo em
+decimal, caracteres em ASCII hexadecimal)
+
+\begin{center}
+\begin{tikzpicture}[
+    pag/.style={draw=black!40, rounded corners=3pt, fill=blue!4, minimum width=2.75cm,
+                minimum height=0.9cm, align=center, font=\footnotesize},
+    lab/.style={font=\scriptsize, align=center, text width=#1, inner sep=1pt},
+    lab/.default=1.45cm,
+    br/.style={decorate, decoration={brace, mirror, amplitude=3pt}, draw=black!55},
+    tit/.style={font=\scriptsize\bfseries, text=black!60, inner sep=1pt}
+  ]
+  \def\P{1.62}\def\X{3.55}
+  % campo: #1 = y da linha, #2 = HEX da esquerda, #3 = HEX da direita, #4 = largura, #5 = texto
+  \newcommand{\campo}[5]{\draw[br] ({\X+(5-#2)*\P-0.12}, #1-0.2) -- ({\X+(5-#3)*\P+0.5}, #1-0.2)
+      node[midway, below=3pt, lab=#4] {#5};}
+  \newcommand{\linha}[7]{% #1 = y; #2..#7 = digitos de HEX5 a HEX0
+    \hexdig{(\X+0*\P,#1)}{#2}\hexdig{(\X+1*\P,#1)}{#3}\hexdig{(\X+2*\P,#1)}{#4}%
+    \hexdig{(\X+3*\P,#1)}{#5}\hexdig{(\X+4*\P,#1)}{#6}\hexdig{(\X+5*\P,#1)}{#7}}
+  \foreach \k [count=\i from 0] in {5,4,3,2,1,0}
+    \node[tit] at (\X+\i*\P+0.2, 1.05) {HEX\k};
+
+  \node[pag] at (1.4, 0.35) {\textbf{SW9..7 = 000}\\sonar (= exp5)};
+  \linha{0}{2}{0}{1}{0}{5}{0}
+  \campo{0}{5}{5}{1.5cm}{estado da UC\\(2 = espera)}
+  \campo{0}{4}{4}{1.5cm}{estado do\\HC-SR04 (0)}
+  \campo{0}{3}{3}{1.5cm}{posição 0--7\\(1 = 040°)}
+  \campo{0}{2}{0}{4.2cm}{distância em cm (050)}
+
+  \node[pag] at (1.4, -1.85) {\textbf{SW9..7 = 001}\\serial};
+  \linha{-2.2}{0}{3}{0}{0}{7}{8}
+  \campo{-2.2}{5}{5}{1.5cm}{estado do TX\\(0 = parado)}
+  \campo{-2.2}{4}{3}{2.9cm}{caractere a enviar, ASCII\\(30 = '0')}
+  \campo{-2.2}{2}{2}{1.5cm}{estado do RX\\(0 = parado)}
+  \campo{-2.2}{1}{0}{2.9cm}{último caractere recebido,\\ASCII (78 = 'x')}
+
+  \node[pag] at (1.4, -4.05) {\textbf{SW9..7 = 010}\\mensagem};
+  \linha{-4.4}{0}{4}{0}{0}{5}{0}
+  \campo{-4.4}{5}{3}{4.2cm}{ângulo em graus (040)}
+  \campo{-4.4}{2}{0}{4.2cm}{distância em cm (050)}
+
+  \node[pag] at (1.4, -6.25) {\textbf{SW9..7 = 011}\\comandos};
+  \linha{-6.6}{2}{0}{0}{1}{7}{8}
+  \campo{-6.6}{5}{5}{1.5cm}{estado da UC}
+  \campo{-6.6}{4}{4}{1.5cm}{modo (0 loc.,\\1 atenção)}
+  \campo{-6.6}{3}{3}{1.5cm}{índice do\\caractere 0--7}
+  \campo{-6.6}{2}{2}{1.5cm}{paridade ok\\(1 = certa)}
+  \campo{-6.6}{1}{0}{2.9cm}{último caractere recebido,\\ASCII (78 = 'x')}
+
+  \node[pag] at (1.4, -8.45) {\textbf{SW9..7 = 1xx}\\livres};
+  \linha{-8.8}{0}{0}{0}{0}{0}{0}
+  \campo{-8.8}{5}{0}{9cm}{livres para a prova: editar \s{s\_pagina4} a \s{s\_pagina7} em \s{sonar2.v} (6 dígitos hexadecimais)}
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.27\linewidth} Y@{}}
+\toprule
+Código no display & Significado \\
+\midrule
+Estado da UC (HEX5, págs.\ 000 e 011) & 0 inicial · 1 preparação · 2 espera · 3 dispara medida · 4 espera medida · 9 timeout · 5 envia char · 6 espera tx · 7 próximo char · 8 muda posição · A final atenção · F final posição (B--E livres) \\
+HC-SR04 (HEX4, pág.\ 000) & 0 inicial · 1 preparação · 2 envia trigger · 3 espera echo · 4 medida · 5 armazenamento · F final \\
+TX (HEX5, pág.\ 001) · RX (HEX2, pág.\ 001) & TX: 0 inicial · 1 preparação · 3 espera · 7 transmissão · F final; RX: 0 inicial · 2 preparação · 3 espera · 7 recepção · 9 registra · F final \\
+ASCII & \s{0}--\s{9} = 30--39 · \s{,} = 2C · \s{\#} = 23 · \s{a} = 61 · \s{v} = 76 · \s{x} = 78 · \s{A} = 41 · \s{V} = 56 \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
 % ==========================================================================
 \section{Códigos de estado}
 
@@ -505,6 +654,154 @@ aparece ``Não Detectado''; só abaixo de 50\,cm vira ponto no radar.
 
 \clearpage
 % ==========================================================================
+\section{Prova (modelo P1): roteiro por atividade}
+
+A prova não é um ciclo de desenvolvimento: são três atividades, cada uma
+terminando numa apresentação ao professor. Os workflows das duas páginas
+seguintes entram dentro delas (síntese e placa na 1, simulação na 2). A
+Atividade 3 é projeto no papel. Cada seta: apresentou ao professor; esperando por ele, adiante a próxima.
+
+\begin{center}
+\begin{tikzpicture}[
+    >={Stealth[length=2mm]},
+    st/.style={draw=black!45, rounded corners=3pt, minimum width=3.15cm,
+               minimum height=1.05cm, align=center, inner sep=1pt},
+    fim/.style={st, draw=green!40!black, thick, fill=green!6},
+    lbl/.style={font=\scriptsize, text=black!70, inner sep=1pt},
+    ar/.style={->, draw=black!60}
+  ]
+  \newcommand{\wf}[3]{{\bfseries #1}\,·\,#2\\[-1pt]{\scriptsize\color{black!65}#3}}
+  \def\dx{3.75}
+  \node[st]  (P0) at (0*\dx, 0) {\wf{0}{bancada}{montar + sintetizar}};
+  \node[st]  (P1) at (1*\dx, 0) {\wf{1}{Atividade 1}{placa, testes, demo}};
+  \node[st]  (P2) at (2*\dx, 0) {\wf{2}{Atividade 2}{cenário M, ondas}};
+  \node[st]  (P3) at (3*\dx, 0) {\wf{3}{Atividade 3}{projeto no papel}};
+  \node[fim] (PF) at (4*\dx, 0) {\wf{F}{relato}{até o fim do dia}};
+  \draw[ar] (P0) -- (P1);
+  \draw[ar] (P1) -- (P2);
+  \draw[ar] (P2) -- (P3);
+  \draw[ar] (P3) -- (PF);
+  \draw[ar] (P1.south) to[bend right=18] node[lbl, below] {esperando o professor: adiantar a 2 e a 3} (P3.south);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.14\linewidth} Y@{}}
+\toprule
+Item & O que fazer e mostrar \\
+\midrule
+0 bancada & montagem da pág.\ 1 (GND primeiro; sensor em 3,3\,V; servo na fonte de 5\,V); enquanto isso, síntese: \s{make} (PC: Ctrl+L) \\
+1a, b, c & \s{make program}; plano de testes do Planejamento: EU1--EU4, EI1--EI2 e EI3 = ET1--ET12; demonstração: varredura, \s{a} (LEDR9, servo para), \s{v} (retoma), páginas \\
+1e-1: caracteres $\to$ modo & \s{sonar2.v:129} sincronizador da \s{entrada\_serial} $\to$ \s{sonar2\_fd.v:235} receptor U10 (pronto, dado, paridade) $\to$ \s{sonar2\_fd.v:251} comparadores: \s{recebeu\_atencao = pronto \& paridade\_ok \& (dado == 'a')} $\to$ \s{sonar2\_uc.v:101} FSM de modo (\s{Matual}) $\to$ \s{sonar2\_uc.v:139} bifurcação no fim do ciclo. Outro caractere: a UC nem fica sabendo \\
+1e-2: estado da transmissão & página 001 (\s{sonar2.v:224}): HEX5 = estado do TX (0 inicial, 1 preparação, 3 espera, 7 transmissão, F final; \s{tx\_serial\_uc.v:32}), HEX4 HEX3 = caractere em ASCII; pág.\ 011 HEX3 = índice 0--7; LEDR4 = \s{saida\_serial}; AD: DIO7 com Protocol UART 7E1; simulação: grupo Mensagem\_TX do \s{wave.do} \\
+2f, g & o Cenário M já está em \s{tb/cenario\_m\_tb.v} (020, 040, 060; \s{a} na espera; 2 ciclos em atenção, em 080). Para o servo parar em 060: \s{espera\_trigger; envia\_comando("a", ATENCAO); ciclo(2, 35, PARADO);} \\
+2 rodar & \s{simb tb/cenario\_m\_tb.v} (confere) e \s{sim tb/cenario\_m\_tb.v} (ondas). PC: \s{do simula.do cenario\_m\_tb} \\
+2h & colar o \s{wave zoom range} do relatório ``Troca de modo 1''. Grupo Troca\_de\_modo: \s{rx\_pronto}, \s{rx\_dado} = a, \s{paridade\_ok}, \s{recebeu\_atencao} (condição do FD) e \s{modo} (\s{Matual}) mudando; \s{estado}: 7 \s{proximo\_char} $\to$ 8 \s{muda\_posicao} $\to$ F \s{final\_posicao} $\to$ 2 \s{espera} $\to$ 3 \s{dispara\_medida}. Print para o relato \\
+3k, l (receita) & (1) interpretar: comando que entra, que sai, comportamento, quando vale (fim do ciclo). (2) FD: comparadores dos caracteres novos e componentes novos (contador) só com controle vindo da UC. (3) UC: FSM de modo + ramo na bifurcação + estados novos (B--E) + tabela de saídas. (4) anotar os diagramas impressos e fotografar. (5) mostrar que a restrição vale: nada reseta nem inibe componente pelo FD \\
+3 modelo (\s{d}/\s{x}) & FD: \s{recebeu\_duplo} (\s{d}) e \s{recebeu\_normal} (\s{x}), iguais aos de \s{a}/\s{v}; contador U11 de 1\,s (\s{conta\_espera\_duplo} $\to$ \s{fim\_espera\_duplo}). Modo: LOCALIZACAO $\to$ DUPLO (código 2) com \s{d}; DUPLO $\to$ LOCALIZACAO com \s{x}. Bifurcação em \s{proximo\_char}: DUPLO e 1ª medida $\to$ \s{espera\_duplo} (B, 1\,s) $\to$ \s{dispara\_medida}; DUPLO e 2ª $\to$ \s{muda\_posicao}. Flag \s{segunda} na UC: 1 em \s{espera\_duplo}, 0 em \s{muda\_posicao} e \s{inicial}. Validado em simulação (08/10): \s{prova/modelo\_duplo.patch} \\
+F relato & foto dos diagramas anotados, print das ondas do item h, resultado do plano de testes; enviar até o fim do dia \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+% ==========================================================================
+\section{Testbench na prova: do enunciado às ondas (Atividade 2)}
+
+\begin{center}
+\begin{tikzpicture}[
+    >={Stealth[length=2mm]},
+    st/.style={draw=black!45, rounded corners=3pt, minimum width=2.15cm,
+               minimum height=1.0cm, align=center, inner sep=1pt},
+    err/.style={st, draw=red!60!black, thick, fill=red!6},
+    fim/.style={st, draw=green!40!black, thick, fill=green!6},
+    lbl/.style={font=\scriptsize, text=black!70, inner sep=1pt},
+    lble/.style={lbl, text=red!60!black},
+    ar/.style={->, draw=black!60},
+    are/.style={->, draw=red!60!black}
+  ]
+  \newcommand{\wf}[3]{{\bfseries #1}\,·\,#2\\[-1pt]{\scriptsize\color{black!65}#3}}
+  \def\dx{2.6}
+  \node[st]  (T0) at (0*\dx, 0) {\wf{0}{lê}{o que, quando}};
+  \node[st]  (T1) at (1*\dx, 0) {\wf{1}{traduz}{frase $\to$ linha}};
+  \node[st]  (T2) at (2*\dx, 0) {\wf{2}{escreve}{cp + módulo}};
+  \node[st]  (T3) at (3*\dx, 0) {\wf{3}{roda}{\ttfamily simb <tb>}};
+  \node[st]  (T5) at (4*\dx, 0) {\wf{5}{ondas}{\ttfamily sim <tb>}};
+  \node[st]  (T6) at (5*\dx, 0) {\wf{6}{localiza}{zoom range}};
+  \node[fim] (TF) at (6*\dx, 0) {\wf{F}{apresenta}{log + ondas}};
+  \node[err] (T4) at (3*\dx, -1.55) {\wf{4}{conserta}{tabela abaixo}};
+  \draw[ar] (T0) -- (T1);
+  \draw[ar] (T1) -- (T2);
+  \draw[ar] (T2) -- (T3);
+  \draw[ar] (T3) -- (T5);
+  \draw[ar] (T5) -- (T6);
+  \draw[ar] (T6) -- (TF);
+  \draw[are] ([xshift=-4mm]T3.south) -- node[lble, left] {ERRO, FALHA} ([xshift=-4mm]T4.north);
+  \draw[ar] ([xshift=4mm]T4.north) -- node[lbl, right] {corrigido} ([xshift=4mm]T3.south);
+\end{tikzpicture}
+\end{center}
+
+\textbf{1 traduz: cada frase do cenário vira uma ou duas linhas} (comece cada uma com
+\s{novo\_caso(n, "frase")}: o log e as ondas ficam com o texto do enunciado)
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth} Y@{}}
+\toprule
+Frase do enunciado & Linhas \\
+\midrule
+liga o circuito & \s{inicia;} \\
+$N$ ciclos em localização (posições 20° a \ldots) & \s{ciclo(0, cm, ANDA); ciclo(1, cm, ANDA); \ldots} (posição $p$ = (ângulo $-$ 20)/20) \\
+recebe \s{a} (sem dizer quando) & na espera: \s{envia\_comando("a", ATENCAO);} e depois o \s{ciclo} \\
+\s{a} durante a medida & \s{espera\_trigger; envia\_comando("a", ATENCAO); ciclo(p, cm, PARADO);} \\
+\s{a} durante a transmissão & \s{responde\_echo(cm); espera\_transmissao; envia\_comando("a", ATENCAO); fim\_ciclo(p, cm, PARADO);} \\
+$M$ ciclos em atenção ($M$ medidas) & \s{ciclo(p, cm, PARADO);} $M$ vezes, mesma posição \\
+recebe \s{v} & \s{envia\_comando("v", LOCALIZACAO);} e o próximo \s{ciclo(p, cm, ANDA)} \\
+caractere inválido, maiúsculo & \s{envia\_comando("A", modo\_atual);} (o modo não muda) \\
+paridade errada & \s{envia\_comando\_paridade\_errada("v", modo\_atual);} \\
+sensor não responde (sem objeto) & \s{ciclo\_sem\_echo(p, ANDA ou PARADO);} \\
+desliga e religa · reset & \s{desliga; confere\_modo(LOCALIZACAO); liga;} · \s{aplica\_reset;} (depois: posição 0) \\
+duas medidas na mesma posição & \s{medida(p, cm1); medida(p, cm2); espera\_fim\_ciclo; confere\_posicao(...);} \\
+intervalo de tempo & \s{t0 = \$time;} \ldots\ \s{confere\_tempo("nome", t\_trigger - t0, min, max);} \\
+mostrar no display ou LED & \s{confere\_pagina(3'b011, 24'h...);} · \s{confere\_sinal("LEDR9", db\_modo\_out, 1);} \\
+\bottomrule
+\end{tabularx}
+
+\textbf{Para prever o esperado:} ângulo = 20 + 20$p$; mensagem \s{aaa,ddd\#} com
+\s{ddd} = cm (de 1 a 300). Em localização o servo vai para $p+1$ depois do ciclo (7 $\to$
+0); em atenção fica. Comando que chega antes do fim do ciclo (espera, medida ou
+transmissão) já vale no próprio ciclo. Depois de \s{inicia}, religar ou reset: modo
+localização e posição 0. Um ciclo leva cerca de 1 a 2\,ms; o \s{envia\_comando}, 87\,µs.
+
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.33\linewidth} Y Y@{}}
+\toprule
+4 conserta: mensagem & Causa provável & O que fazer \\
+\midrule
+\s{ERRO: servo na posicao X (esperada Y)} & \s{ANDA}/\s{PARADO} trocado, ou o comando chegou em outro ciclo & regra do fim do ciclo; \s{rastro\_uc = 1;} \\
+\s{ERRO: mensagem "..." esperada "..."} & posição ou cm errados no \s{ciclo} & recalcular: ângulo = 20 + 20$p$ \\
+\s{ERRO: UC no modo X (esperado Y)} & caractere errado, minúsculo/maiúsculo, comando que não vale naquele modo & conferir o caractere e o modo anterior \\
+\s{FALHA: simulacao travada (watchdog)} & esperando algo que não acontece (estado que não vem, ciclo com o sonar desligado) & \s{rastro\_uc = 1;} e ver onde parou \\
+\s{Unable to bind} · \s{Undefined variable} & nome errado ou variável declarada depois de usar & declarar no começo do módulo \\
+nada compila & erro de sintaxe neste ou em outro arquivo de \s{tb/}; dois arquivos com o mesmo \s{module} & corrigir; \s{do simula.do <tb>} isola \\
+\bottomrule
+\end{tabularx}
+
+\textbf{5--6 nas ondas} (\s{sim tb/cenario\_x\_tb.v}; PC: \s{do simula.do cenario\_x\_tb}):
+o \s{wave.do} abre os grupos Testbench (\s{caso}, \s{caso\_texto}),
+Troca\_de\_modo (\s{entrada\_serial}, \s{rx\_pronto}, \s{rx\_dado}, \s{paridade\_ok},
+\s{recebeu\_*}, \s{modo}, \s{estado}), entradas e saídas, condições e controles da UC,
+mensagem TX, sensor e servo; estados e modos pelo nome.
+\begin{itemize}[before=\raggedright]
+  \item \textbf{Troca de modo:} o \s{finaliza} imprime ``== Troca de modo'' com os sinais
+        do FD, a troca do \s{Matual} e os estados da UC; copiar a linha
+        \s{wave zoom range ...} e colar no console do Questa.
+  \item \textbf{Outro evento} (timeout, comando ignorado, mudança de posição):
+        \s{t0 = \$time;} antes e \s{relata\_janela("nome", t0, \$time);} depois (mesmo
+        relatório, para qualquer janela); \s{marca("texto");} registra um instante.
+  \item \textbf{Mostrar:} cursores (Insert Cursor) na subida de \s{recebeu\_*} e na troca
+        de \s{modo}: o Questa mostra o tempo entre eles. Figura: File $\to$ Export $\to$ Image.
+  \item \textbf{Apresentar:} o cenário comentado (um \s{novo\_caso} por frase), o log com
+        ``todos os casos OK'' e a janela das ondas com os sinais pedidos.
+\end{itemize}
+
+\clearpage
+% ==========================================================================
 \section{Workflow como máquina de estados: notebook (Linux)}
 
 Máquina de Moore: em cada estado você executa a saída (os comandos da tabela) e
@@ -739,6 +1036,7 @@ Task & O que faz \\
 \s{confere\_sinal("nome", sinal, valor)} & qualquer sinal: LED, GPIO novo, interno (\s{dut.s\_...}) \\
 \s{confere\_tempo("nome", t, min, max)} & intervalo em ns; \s{t\_trigger}, \s{t\_trigger\_ant}, \s{t\_fim\_ciclo}, \s{T\_ESPERA}, \s{T\_TIMEOUT}, \s{T\_QUADRO} \\
 \s{rastro\_uc = 1;} & imprime cada transição da UC, com o nome do estado \\
+\s{relata\_janela("nome", t0, \$time)} · \s{marca("texto")} & relatório de qualquer janela (quadros, \s{recebeu\_*}, modo, estados da UC) com \s{wave zoom range} · instante no log \\
 \bottomrule
 \end{tabularx}
 
